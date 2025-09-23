@@ -1,4 +1,0 @@
-repository "bb clone 2/bb clone 2@18968212489581@cloud"
-  path "/"
-    br "/main"
-    co "/main"
