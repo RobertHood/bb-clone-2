@@ -18,6 +18,9 @@ public class GridManager: MonoBehaviour
     UnityEngine.Vector3 currentMousePos;
     Vector3Int currentGridPos;
 
+    private Vector3Int gridMin = new Vector3Int(-2, -6, 0);
+    private Vector3Int gridMax = new Vector3Int(5, 1, 0);
+
     private Dictionary<Vector3Int, int> gridMap = new Dictionary<Vector3Int, int>();
 
     //exp block
@@ -73,7 +76,7 @@ public class GridManager: MonoBehaviour
 
         foreach (Vector3Int gridPos in targetPos)
         {
-            if (!IsCellFree(gridPos))
+            if (!IsCellFree(gridPos) || !IsCellWithinBound(gridPos))
             {
                 droppedObject.transform.position = droppedObject.GetComponent<BlockData>().originPos;
                 return;
@@ -127,5 +130,9 @@ public class GridManager: MonoBehaviour
         return positions;
     }
 
-    
+    private bool IsCellWithinBound(Vector3Int gridPos)
+    {
+            return gridPos.x >= gridMin.x && gridPos.x <= gridMax.x &&
+            gridPos.y >= gridMin.y && gridPos.y <= gridMax.y;
+    }
 }
