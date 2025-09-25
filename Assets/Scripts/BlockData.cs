@@ -30,6 +30,9 @@ public class BlockData : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, 
             sr.sortingLayerName = "Block";
             sr.sortingOrder = 6;
         }
+
+        // Đặt scale mặc định
+        transform.localScale = Vector3.one * 0.8f;
     }
 
     public void OnBeginDrag(PointerEventData eventData)
@@ -55,6 +58,8 @@ public class BlockData : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, 
         Vector3 worldPoint = Camera.main.ScreenToWorldPoint(eventData.position);
         worldPoint.z = 0f;
         transform.position = worldPoint;
+        // Set scale về 1 khi đặt block
+        transform.localScale = Vector3.one;
         Debug.Log("OnDrag");
     }
 
@@ -73,7 +78,7 @@ public class BlockData : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, 
 
         Vector3 worldPos = Camera.main.ScreenToWorldPoint(eventData.position);
         worldPos.z = 0;
-        int tilemapLayerMask = LayerMask.GetMask("Tilemap");
+        int tilemapLayerMask = LayerMask.GetMask("Tilemap"); // kiểm tra vị trí có nằm trong tilemap hay không
 
         RaycastHit2D hit = Physics2D.Raycast(worldPos, Vector2.zero, Mathf.Infinity, tilemapLayerMask); // hit tra ve mot tia raycast
 
@@ -84,11 +89,15 @@ public class BlockData : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, 
             if (gridManager != null)
             {
                 gridManager.HandleDrop(this.gameObject, worldPos);
+                // Set scale về 1 khi đặt block
+                transform.localScale = Vector3.one;
             }
         }
         else
         {
             Debug.Log("Dropped outside tilemap");
+            // Đặt scale mặc định
+            transform.localScale = Vector3.one * 0.8f;
         }
     }
 
