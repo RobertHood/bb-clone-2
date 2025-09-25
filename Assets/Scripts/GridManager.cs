@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -6,7 +8,7 @@ using UnityEngine.Tilemaps;
 using System.Collections.Generic;
 
 
-public class GridManager : MonoBehaviour
+public class GridManager: MonoBehaviour
 {
     public Tilemap tilemap;
     public TileBase highlightTile;
@@ -16,9 +18,6 @@ public class GridManager : MonoBehaviour
     private Vector3Int previousGridPos = new Vector3Int(999, 999);
     UnityEngine.Vector3 currentMousePos;
     Vector3Int currentGridPos;
-
-    private Vector3Int gridMin = new Vector3Int(-2, -6, 0);
-    private Vector3Int gridMax = new Vector3Int(5, 1, 0);
 
     private Dictionary<Vector3Int, int> gridMap = new Dictionary<Vector3Int, int>();
 
@@ -75,7 +74,7 @@ public class GridManager : MonoBehaviour
 
         foreach (Vector3Int gridPos in targetPos)
         {
-            if (!IsCellFree(gridPos) || !IsCellWithinBound(gridPos))
+            if (!IsCellFree(gridPos))
             {
                 droppedObject.transform.position = droppedObject.GetComponent<BlockData>().originPos;
                 return;
@@ -129,9 +128,5 @@ public class GridManager : MonoBehaviour
         return positions;
     }
 
-    private bool IsCellWithinBound(Vector3Int gridPos)
-    {
-            return gridPos.x >= gridMin.x && gridPos.x <= gridMax.x &&
-            gridPos.y >= gridMin.y && gridPos.y <= gridMax.y;
-    }
+    
 }

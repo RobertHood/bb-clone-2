@@ -2,13 +2,18 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
 using UnityEngine.Tilemaps;
+using System.Collections.Generic;
 
-public class BlockData : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndDragHandler, IDragHandler, IDropHandler
+public class BlockData : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndDragHandler, IDragHandler
 {
     [SerializeField] private Canvas canvas;
     private RectTransform rectTransform;
     private CanvasGroup canvasGroup;
     private Collider2D col;
+
+    public List<Transform> cells = new List<Transform>();
+    public Vector3 originPos;
+    public bool isLocked = false;
     private void Awake()
     {
         col = GetComponent<Collider2D>();
@@ -16,7 +21,7 @@ public class BlockData : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, 
         canvasGroup = GetComponent<CanvasGroup>();
         SpriteRenderer sr = GetComponent<SpriteRenderer>();
 
-        foreach (Transform child in transform) // duyêt các block add vào cell
+        foreach (Transform child in transform)
         {
             cells.Add(child);
         }
@@ -29,12 +34,12 @@ public class BlockData : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, 
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        if (isLocked) // nếu bị khóa thì ko cho người chơi kéo block nữa
+        if (isLocked)
         {
             return;
         }
-        canvasGroup.blocksRaycasts = false; // tắt raycasts để grid nhận chuột
-        originPos = transform.position; // lưu lại vị trí ban đầu để xảy ra lỗi thả block về vị trí đầu tiên
+        canvasGroup.blocksRaycasts = false;
+        originPos = transform.position;
         Debug.Log("OnBeginDrag");
         if (col != null) // tắt colider trong lúc kéo block
         {
@@ -47,14 +52,18 @@ public class BlockData : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, 
         {
             return;
         }
-        Vector3 worldPoint = Camera.main.ScreenToWorldPoint(eventData.position); // dịch tọa độ màn hình sang tọa độ thế giới game
-        worldPoint.z = 0f; // đặt z = 0 để đảm bảo luôn nằm trong mặt phẳng 2d
+        Vector3 worldPoint = Camera.main.ScreenToWorldPoint(eventData.position);
+        worldPoint.z = 0f;
         transform.position = worldPoint;
         Debug.Log("OnDrag");
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
+        if (isLocked)
+        {
+            return;
+        }
         if (col != null)
         {
             col.enabled = true;
@@ -85,12 +94,11 @@ public class BlockData : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, 
 
     public void OnPointerDown(PointerEventData eventData)
     {  
+        if (isLocked)
+        {
+            return;
+        }
         Debug.Log("OnPointerDown");
-    }
-
-    public void OnDrop(PointerEventData eventData)
-    {
-        
     }
 
     void Start()
