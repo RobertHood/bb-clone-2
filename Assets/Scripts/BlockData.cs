@@ -14,23 +14,41 @@ public class BlockData : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, 
         col = GetComponent<Collider2D>();
         rectTransform = GetComponent<RectTransform>();
         canvasGroup = GetComponent<CanvasGroup>();
-        SpriteRenderer sr = GetComponent<SpriteRenderer>(); 
-        sr.sortingLayerName = "Block";
-        sr.sortingOrder = 6;
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+
+        foreach (Transform child in transform) // duyêt các block add vào cell
+        {
+            cells.Add(child);
+        }
+        if (sr != null)
+        {
+            sr.sortingLayerName = "Block";
+            sr.sortingOrder = 6;
+        }
     }
+
     public void OnBeginDrag(PointerEventData eventData)
     {
-        canvasGroup.blocksRaycasts = false;
+        if (isLocked) // nếu bị khóa thì ko cho người chơi kéo block nữa
+        {
+            return;
+        }
+        canvasGroup.blocksRaycasts = false; // tắt raycasts để grid nhận chuột
+        originPos = transform.position; // lưu lại vị trí ban đầu để xảy ra lỗi thả block về vị trí đầu tiên
         Debug.Log("OnBeginDrag");
-        if (col != null)
+        if (col != null) // tắt colider trong lúc kéo block
         {
             col.enabled = false;
         }
     }
     public void OnDrag(PointerEventData eventData)
     {
-        Vector3 worldPoint = Camera.main.ScreenToWorldPoint(eventData.position);
-        worldPoint.z = 0f;
+        if (isLocked)
+        {
+            return;
+        }
+        Vector3 worldPoint = Camera.main.ScreenToWorldPoint(eventData.position); // dịch tọa độ màn hình sang tọa độ thế giới game
+        worldPoint.z = 0f; // đặt z = 0 để đảm bảo luôn nằm trong mặt phẳng 2d
         transform.position = worldPoint;
         Debug.Log("OnDrag");
     }
