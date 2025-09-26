@@ -145,11 +145,11 @@ public class GridManager : MonoBehaviour
     }
 
     // --- Helpers ---
-    private void SetGridPosValue(Vector3Int gridPos, int v) => gridMap[gridPos] = v;
-    private bool IsCellFree(Vector3Int gridPos) => GetGridPosValue(gridPos) == 0;
-    private int GetGridPosValue(Vector3Int gridPos) => gridMap.TryGetValue(gridPos, out int value) ? value : 0;
+    private void SetGridPosValue(Vector3Int gridPos, int v) => gridMap[gridPos] = v; // dánh dấu cell có block 1 hoặc 0
+    private bool IsCellFree(Vector3Int gridPos) => GetGridPosValue(gridPos) == 0; // kiểm tra ô còn trống không
+    private int GetGridPosValue(Vector3Int gridPos) => gridMap.TryGetValue(gridPos, out int value) ? value : 0; 
 
-    private bool IsInsideGrid(Vector3Int pos)
+    private bool IsInsideGrid(Vector3Int pos) // kiểm tra có nằm trong khung 8x8 không
     {
         return pos.x >= minX && pos.x <= maxX && pos.y >= minY && pos.y <= maxY;
     }
