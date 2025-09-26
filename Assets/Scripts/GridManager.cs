@@ -129,7 +129,6 @@ public class GridManager: MonoBehaviour
         }
         return positions;
     }
-
     private bool IsCellWithinBound(Vector3Int gridPos)
     {
             return gridPos.x >= gridMin.x && gridPos.x <= gridMax.x &&
