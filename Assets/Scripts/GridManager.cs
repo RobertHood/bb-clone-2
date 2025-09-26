@@ -1,165 +1,134 @@
+using System;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.Tilemaps;
 
-public class GridManager : MonoBehaviour
+
+public class GridManager: MonoBehaviour
 {
-    [Header("Tilemap & Tile Assets")]
     public Tilemap tilemap;
     public TileBase highlightTile;
     public TileBase originalTile;
-
-    [Header("Board Settings (8x8)")]
-    public int minX = -2, maxX = 5;   // theo trục X
-    public int minY = -6, maxY = 1;   // theo trục Y
-
-    // Lưu preview highlight
-    private List<Vector3Int> previousPreview = new List<Vector3Int>();
+    public int x;
+    public int y;
+    private Vector3Int previousGridPos = new Vector3Int(999, 999);
+    UnityEngine.Vector3 currentMousePos;
+    Vector3Int currentGridPos;
 
     private Vector3Int gridMin = new Vector3Int(-2, -6, 0);
     private Vector3Int gridMax = new Vector3Int(5, 1, 0);
 
-
     private Dictionary<Vector3Int, int> gridMap = new Dictionary<Vector3Int, int>();
 
-    // Đối tượng đang drag
-    private GameObject objectBeingDragged;
-
+    //exp block
+    //Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         if (tilemap == null)
+        {
             tilemap = GetComponent<Tilemap>();
+        }
     }
 
+    // Update is called once per frame
     void Update()
     {
-        if (objectBeingDragged == null) return;
+        currentMousePos = Camera.main.ScreenToWorldPoint(Mouse.current.position.value);
+        currentMousePos.z = 0;
+        currentGridPos = tilemap.WorldToCell(currentMousePos);
 
-        // Lấy vị trí chuột trong world & cell
-        Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Mouse.current.position.value);
-        mouseWorld.z = 0;
-
-        // Lấy preview cell positions cho toàn block
-        Vector3Int[] previewCells = GetPreviewCells(objectBeingDragged, mouseWorld);
-
-        // Clear highlight cũ
         ClearHighlight();
-
-        // Set highlight mới (nếu hợp lệ trong board)
-        List<Vector3Int> validCells = new List<Vector3Int>();
-        foreach (var pos in previewCells)
+        if (currentGridPos.x >= -2 && currentGridPos.x <= 5 && currentGridPos.y >= -6 && currentGridPos.y <= 1) // gioi han trong grid //cai nay chac viet lai bang cellbounds dc
         {
-            if (IsInsideGrid(pos))
-                validCells.Add(pos);
+            SetHighlight();
         }
-        SetHighlight(validCells);
+        //debug
+        x = currentGridPos.x;
+        y = currentGridPos.y;
     }
 
-    // --- Khi bắt đầu drag block ---
-    public void StartDrag(GameObject block)
+    void ClearHighlight()
     {
-        objectBeingDragged = block;
-    }
-
-    // --- Khi thả block ---
-    public void EndDrag(GameObject block)
-    {
-        if (objectBeingDragged != block) return;
-
-        Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Mouse.current.position.value);
-        mouseWorld.z = 0;
-        Vector3Int[] targetCells = GetPreviewCells(block, mouseWorld);
-
-        // Kiểm tra hợp lệ
-        foreach (var cell in targetCells)
+        if (currentGridPos != previousGridPos)
         {
-            if (!IsInsideGrid(cell) || !IsCellFree(cell))
+            if (tilemap.GetTile(previousGridPos) == highlightTile)
             {
-                // Trả block về vị trí cũ
-                block.transform.position = block.GetComponent<BlockData>().originPos;
-                objectBeingDragged = null;
-                ClearHighlight();
+                tilemap.SetTile(previousGridPos, originalTile);
+            }
+        }
+    }
+
+    void SetHighlight()
+    {
+        if (tilemap.GetTile(currentGridPos) == originalTile)
+        {
+            tilemap.SetTile(currentGridPos, highlightTile);
+            previousGridPos = currentGridPos;
+        }
+    }
+
+    public void HandleDrop(GameObject droppedObject, Vector3 worldPos)
+    {
+        Vector3Int[] targetPos = GetTargetGridPositions(droppedObject);
+
+        foreach (Vector3Int gridPos in targetPos)
+        {
+            if (!IsCellFree(gridPos) || !IsCellWithinBound(gridPos))
+            {
+                droppedObject.transform.position = droppedObject.GetComponent<BlockData>().originPos;
                 return;
             }
         }
 
-        // Snap vào grid
-        SnapToGrid(block, targetCells);
-        objectBeingDragged = null;
-        ClearHighlight();
+        SnapToGrid(droppedObject, targetPos);
     }
 
-    // --- Xử lý Snap ---
-    private void SnapToGrid(GameObject block, Vector3Int[] targetCells)
+    private void SnapToGrid(GameObject droppedObject, Vector3Int[] targetPos)
     {
-        Vector3 firstCellCenter = tilemap.GetCellCenterWorld(targetCells[0]);
-        Vector3 offset = firstCellCenter - block.GetComponent<BlockData>().cells[0].position;
-
-        block.GetComponent<BlockData>().isLocked = true;
-        if (block.GetComponent<Collider2D>() != null)
-            block.GetComponent<Collider2D>().enabled = false;
-
-        block.transform.position += offset;
-
-        foreach (var cell in targetCells)
-            SetGridPosValue(cell, 1);
-    }
-
-    // --- Clear highlight ---
-    private void ClearHighlight()
-    {
-        foreach (var pos in previousPreview)
+        Vector3 firstCellCenter = tilemap.GetCellCenterWorld(targetPos[0]);
+        Vector3 offset = firstCellCenter - droppedObject.GetComponent<BlockData>().cells[0].position;
+        droppedObject.GetComponent<BlockData>().isLocked = true;
+        if (droppedObject.GetComponent<Collider2D>() != null)
         {
-            if (tilemap.GetTile(pos) == highlightTile)
-                tilemap.SetTile(pos, originalTile);
+            droppedObject.GetComponent<Collider2D>().enabled = false;
         }
-        previousPreview.Clear();
-    }
 
-    // --- Set highlight ---
-    private void SetHighlight(List<Vector3Int> cells)
-    {
-        foreach (var pos in cells)
+        droppedObject.transform.position += offset;
+        foreach (Vector3Int gridPos in targetPos)
         {
-            if (tilemap.GetTile(pos) == originalTile)
-            {
-                tilemap.SetTile(pos, highlightTile);
-                previousPreview.Add(pos);
-            }
+            SetGridPosValue(gridPos, 1);
         }
     }
 
-    // --- Lấy preview cell positions của block dựa theo chuột ---
-    private Vector3Int[] GetPreviewCells(GameObject block, Vector3 mouseWorld)
+    private void SetGridPosValue(Vector3Int gridPos, int v)
     {
-        BlockData data = block.GetComponent<BlockData>();
-        Vector3Int[] positions = new Vector3Int[data.cells.Count];
+        gridMap[gridPos] = v;
+    }
 
-        // Tính offset: từ cell đầu tiên của block đến vị trí chuột
-        Vector3Int mouseCell = tilemap.WorldToCell(mouseWorld);
-        Vector3 cellCenter = tilemap.GetCellCenterWorld(mouseCell);
-        Vector3 offset = cellCenter - data.cells[0].position;
+    private bool IsCellFree(Vector3Int gridPos)
+    {
+        return GetGridPosValue(gridPos) == 0;
+    }
 
-        for (int i = 0; i < data.cells.Count; i++)
+    private int GetGridPosValue(Vector3Int gridPos)
+    {
+        return gridMap.TryGetValue(gridPos, out int value) ? value : 0;
+    }
+
+    private Vector3Int[] GetTargetGridPositions(GameObject droppedObject)
+    {
+        BlockData blockdata = droppedObject.GetComponent<BlockData>();
+        Vector3Int[] positions = new Vector3Int[blockdata.cells.Count];
+        for (int i = 0; i < blockdata.cells.Count; i++)
         {
-            Vector3 worldPos = data.cells[i].position + offset;
-            positions[i] = tilemap.WorldToCell(worldPos);
+            Vector3 worldCellPos = blockdata.cells[i].position;
+            positions[i] = tilemap.WorldToCell(worldCellPos);
         }
         return positions;
     }
-
-
-    // --- Helpers ---
-    private void SetGridPosValue(Vector3Int gridPos, int v) => gridMap[gridPos] = v; // dánh dấu cell có block 1 hoặc 0
-    private bool IsCellFree(Vector3Int gridPos) => GetGridPosValue(gridPos) == 0; // kiểm tra ô còn trống không
-    private int GetGridPosValue(Vector3Int gridPos) => gridMap.TryGetValue(gridPos, out int value) ? value : 0; 
-
-    private bool IsInsideGrid(Vector3Int pos) // kiểm tra có nằm trong khung 8x8 không
-    {
-        return pos.x >= minX && pos.x <= maxX && pos.y >= minY && pos.y <= maxY;
-    }
-
     private bool IsCellWithinBound(Vector3Int gridPos)
     {
             return gridPos.x >= gridMin.x && gridPos.x <= gridMax.x &&
