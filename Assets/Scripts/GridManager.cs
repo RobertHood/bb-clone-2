@@ -16,6 +16,11 @@ public class GridManager : MonoBehaviour
 
     // Lưu preview highlight
     private List<Vector3Int> previousPreview = new List<Vector3Int>();
+
+    private Vector3Int gridMin = new Vector3Int(-2, -6, 0);
+    private Vector3Int gridMax = new Vector3Int(5, 1, 0);
+
+
     private Dictionary<Vector3Int, int> gridMap = new Dictionary<Vector3Int, int>();
 
     // Đối tượng đang drag
@@ -144,6 +149,7 @@ public class GridManager : MonoBehaviour
         return positions;
     }
 
+
     // --- Helpers ---
     private void SetGridPosValue(Vector3Int gridPos, int v) => gridMap[gridPos] = v; // dánh dấu cell có block 1 hoặc 0
     private bool IsCellFree(Vector3Int gridPos) => GetGridPosValue(gridPos) == 0; // kiểm tra ô còn trống không
@@ -152,5 +158,11 @@ public class GridManager : MonoBehaviour
     private bool IsInsideGrid(Vector3Int pos) // kiểm tra có nằm trong khung 8x8 không
     {
         return pos.x >= minX && pos.x <= maxX && pos.y >= minY && pos.y <= maxY;
+    }
+
+    private bool IsCellWithinBound(Vector3Int gridPos)
+    {
+            return gridPos.x >= gridMin.x && gridPos.x <= gridMax.x &&
+            gridPos.y >= gridMin.y && gridPos.y <= gridMax.y;
     }
 }
