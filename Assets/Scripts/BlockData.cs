@@ -1,113 +1,94 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
-using UnityEngine.Tilemaps;
 using System.Collections.Generic;
 
 public class BlockData : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndDragHandler, IDragHandler
 {
-    [SerializeField] private Canvas canvas;
-    private RectTransform rectTransform;
     private CanvasGroup canvasGroup;
     private Collider2D col;
 
+    [Header("Block Cells")]
     public List<Transform> cells = new List<Transform>();
+
+    [Header("State")]
     public Vector3 originPos;
     public bool isLocked = false;
+
     private void Awake()
     {
         col = GetComponent<Collider2D>();
-        rectTransform = GetComponent<RectTransform>();
         canvasGroup = GetComponent<CanvasGroup>();
-        SpriteRenderer sr = GetComponent<SpriteRenderer>();
 
+        // Lưu các ô con của block
         foreach (Transform child in transform)
         {
             cells.Add(child);
         }
-        if (sr != null)
-        {
-            sr.sortingLayerName = "Block";
-            sr.sortingOrder = 6;
-        }
+
+        // Scale mặc định khi spawn block
+        transform.localScale = Vector3.one * 0.8f;
+    }
+
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        if (isLocked) return;
+        Debug.Log("OnPointerDown");
     }
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        if (isLocked)
-        {
-            return;
-        }
+        if (isLocked) return;
+
         canvasGroup.blocksRaycasts = false;
         originPos = transform.position;
+
+        if (col != null) col.enabled = false;
+
+        // Scale về 1 khi bắt đầu kéo
+        transform.localScale = Vector3.one;
+
+        // Thông báo GridManager biết block này đang drag
+        FindObjectOfType<GridManager>().StartDrag(this.gameObject);
+
         Debug.Log("OnBeginDrag");
-        if (col != null)
-        {
-            col.enabled = false;
-        }
     }
+
     public void OnDrag(PointerEventData eventData)
     {
-        if (isLocked)
-        {
-            return;
-        }
+        if (isLocked) return;
+
         Vector3 worldPoint = Camera.main.ScreenToWorldPoint(eventData.position);
         worldPoint.z = 0f;
         transform.position = worldPoint;
+
+        // Preview sẽ tự động cập nhật trong GridManager.Update()
         Debug.Log("OnDrag");
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        if (isLocked)
-        {
-            return;
-        }
-        if (col != null)
-        {
-            col.enabled = true;
-        }
-        Debug.Log("OnEndDrag");
+        if (isLocked) return;
+
+        if (col != null) col.enabled = true;
         canvasGroup.blocksRaycasts = true;
 
         Vector3 worldPos = Camera.main.ScreenToWorldPoint(eventData.position);
         worldPos.z = 0;
-        int tilemapLayerMask = LayerMask.GetMask("Tilemap");
 
-        RaycastHit2D hit = Physics2D.Raycast(worldPos, Vector2.zero, Mathf.Infinity, tilemapLayerMask); // hit tra ve mot tia raycast
-
-        if (hit.collider != null && hit.collider.GetComponent<Tilemap>() != null)
-        //neu ma raycast duoc mot tia tu con tro chuot den tilemap
+        GridManager gm = FindObjectOfType<GridManager>();
+        if (gm != null)
         {
-            GridManager gridManager = hit.collider.GetComponent<GridManager>();
-            if (gridManager != null)
-            {
-                gridManager.HandleDrop(this.gameObject, worldPos);
-            }
+            gm.EndDrag(this.gameObject);
         }
-        else
+
+        // Nếu block chưa được lock (drop outside) → reset về vị trí gốc
+        if (!isLocked)
         {
-            Debug.Log("Dropped outside tilemap");
+            transform.position = originPos;
+            transform.localScale = Vector3.one * 0.8f;
+            Debug.Log("Dropped outside grid → Reset");
         }
-    }
 
-    public void OnPointerDown(PointerEventData eventData)
-    {  
-        if (isLocked)
-        {
-            return;
-        }
-        Debug.Log("OnPointerDown");
-    }
-
-    void Start()
-    {
-        
-    }
-
-    void Update()
-    {
-        
+        Debug.Log("OnEndDrag");
     }
 }
