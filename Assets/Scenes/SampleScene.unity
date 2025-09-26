@@ -375,7 +375,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 540, y: 960, z: -10}
+  m_LocalPosition: {x: 0, y: 0, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1447,8 +1447,10 @@ MonoBehaviour:
   tilemap: {fileID: 1533061894}
   highlightTile: {fileID: 11400000, guid: b52def615310a1d45927ee88c6aa732e, type: 2}
   originalTile: {fileID: 11400000, guid: 004e61d863fef9640a8b4b7ddd5e7c69, type: 2}
-  x: 0
-  y: 0
+  minX: -2
+  maxX: 5
+  minY: -6
+  maxY: 1
 --- !u!19719996 &1533061897
 TilemapCollider2D:
   m_ObjectHideFlags: 0
