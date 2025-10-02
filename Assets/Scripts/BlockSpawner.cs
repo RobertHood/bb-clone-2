@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEditor.Rendering;
 using UnityEditor.XR;
 using UnityEngine;
@@ -48,18 +49,31 @@ public class BlockSpawner : MonoBehaviour
     void Update()
     {
         if (currentBlocks.Count == 0) return;
+
         bool allLocked = true;
-        foreach (GameObject block in currentBlocks)
+
+        for (int i = currentBlocks.Count - 1; i >= 0; i--)
         {
-            if (!block.GetComponent<BlockData>().isLocked)
+            GameObject block = currentBlocks[i];
+            
+            if (block == null)
+            {
+                currentBlocks.RemoveAt(i);
+                continue;
+            }
+
+            BlockData data = block.GetComponent<BlockData>();
+            if (data != null && !data.isLocked)
             {
                 allLocked = false;
                 break;
             }
         }
-        if (allLocked)
+
+        if (allLocked && currentBlocks.Count > 0)
         {
             SpawnBlock();
         }
     }
+
 }

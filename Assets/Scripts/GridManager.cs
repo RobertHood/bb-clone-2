@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Tilemaps;
@@ -20,6 +21,7 @@ public class GridManager : MonoBehaviour
     private Vector3Int gridMin = new Vector3Int(-2, -6, 0);
     private Vector3Int gridMax = new Vector3Int(5, 1, 0);
 
+    public Transform placedBlock;
 
     private Dictionary<Vector3Int, int> gridMap = new Dictionary<Vector3Int, int>();
 
@@ -101,9 +103,11 @@ public class GridManager : MonoBehaviour
             block.GetComponent<Collider2D>().enabled = false;
 
         block.transform.position += offset;
-
+        block.transform.SetParent(placedBlock);
         foreach (var cell in targetCells)
             SetGridPosValue(cell, 1);
+
+        CheckAndClear();
     }
 
     // --- Clear highlight ---
@@ -151,18 +155,106 @@ public class GridManager : MonoBehaviour
 
 
     // --- Helpers ---
-    private void SetGridPosValue(Vector3Int gridPos, int v) => gridMap[gridPos] = v; // dánh dấu cell có block 1 hoặc 0
+    private void SetGridPosValue(Vector3Int gridPos, int v) => gridMap[gridPos] = v; // dánh dấu cell có block `1 hoặc 0
     private bool IsCellFree(Vector3Int gridPos) => GetGridPosValue(gridPos) == 0; // kiểm tra ô còn trống không
-    private int GetGridPosValue(Vector3Int gridPos) => gridMap.TryGetValue(gridPos, out int value) ? value : 0; 
+    private int GetGridPosValue(Vector3Int gridPos) => gridMap.TryGetValue(gridPos, out int value) ? value : 0;
 
     private bool IsInsideGrid(Vector3Int pos) // kiểm tra có nằm trong khung 8x8 không
     {
         return pos.x >= minX && pos.x <= maxX && pos.y >= minY && pos.y <= maxY;
     }
 
-    private bool IsCellWithinBound(Vector3Int gridPos)
+    private void CheckAndClear()
     {
-            return gridPos.x >= gridMin.x && gridPos.x <= gridMax.x &&
-            gridPos.y >= gridMin.y && gridPos.y <= gridMax.y;
+        DeleteRow();
+        DeleteCol();
+    }
+
+    private void DeleteRow()
+    {
+        for (int y = minY; y <= maxY; y++)
+        {
+        bool full = true;
+
+        // check if row is full
+        for (int x = minX; x <= maxX; x++)
+        {
+            if (!gridMap.TryGetValue(new Vector3Int(x, y, 0), out int val) || val == 0)
+            {
+                full = false;
+                break;
+            }
+        }
+
+        if (full)
+        {
+            Debug.Log("Cleared Row at Y=" + y);
+
+            foreach (BlockData block in FindObjectsByType<BlockData>(FindObjectsSortMode.None))
+            {
+                
+                var cellsCopy = new List<Transform>(block.cells);
+
+                foreach (Transform cell in cellsCopy)
+                {
+                    Vector3Int cellGridPos = tilemap.WorldToCell(cell.position);
+                    if (cellGridPos.y == y)
+                    {
+                        Destroy(cell.gameObject);
+                        gridMap[cellGridPos] = 0; 
+                        block.cells.Remove(cell);
+                    }
+                }
+                if (block.cells.Count == 0)
+                {
+                    Destroy(block.gameObject);
+                }
+            }
+        }
+    }
+    }
+
+    private void DeleteCol()
+    {
+        for (int x = minX; x <= maxX; x++)
+        {
+        bool full = true;
+
+        // check if column is full
+        for (int y = minY; y <= maxY; y++)
+        {
+            if (!gridMap.TryGetValue(new Vector3Int(x, y, 0), out int val) || val == 0)
+            {
+                full = false;
+                break;
+            }
+        }
+
+        if (full)
+        {
+            Debug.Log("Cleared Col at X=" + x);
+
+            foreach (BlockData block in FindObjectsByType<BlockData>(FindObjectsSortMode.None))
+            {
+                var cellsCopy = new List<Transform>(block.cells);
+
+                foreach (Transform cell in cellsCopy)
+                {
+                    Vector3Int cellGridPos = tilemap.WorldToCell(cell.position);
+                    if (cellGridPos.x == x) 
+                    {
+                        Destroy(cell.gameObject);
+                        gridMap[cellGridPos] = 0;
+                        block.cells.Remove(cell);
+                    }
+                }
+
+                if (block.cells.Count == 0)
+                {
+                    Destroy(block.gameObject);
+                }
+                }
+            }
+        }
     }
 }

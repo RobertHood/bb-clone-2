@@ -26,7 +26,7 @@ public class BlockData : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, 
         }
 
         // Scale mặc định khi spawn block
-        transform.localScale = Vector3.one * 0.8f;
+        transform.localScale = Vector3.one * 0.6f;
     }
 
     public void OnPointerDown(PointerEventData eventData)
@@ -85,10 +85,18 @@ public class BlockData : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, 
         if (!isLocked)
         {
             transform.position = originPos;
-            transform.localScale = Vector3.one * 0.8f;
+            transform.localScale = Vector3.one * 0.6f;
             Debug.Log("Dropped outside grid → Reset");
         }
 
         Debug.Log("OnEndDrag");
+    }
+
+    void Update()
+    {
+        if (transform.childCount == 0)
+        {
+            Destroy(gameObject);
+        }
     }
 }
