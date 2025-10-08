@@ -10,9 +10,9 @@ public class BlockSpawner : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     public List<GameObject> blockArrays = new List<GameObject>();
     
-    private Vector3 firstSlot = new Vector3(-2, (float)-3.5, 0);
-    private Vector3 secondSlot = new Vector3(0, (float)-3.5, 0);
-    private Vector3 thirdSlot = new Vector3(2, (float)-3.5, 0);
+    private Vector3 firstSlot = new Vector3(-2, (float)-3.5, -1);
+    private Vector3 secondSlot = new Vector3(0, (float)-3.5, -1);
+    private Vector3 thirdSlot = new Vector3(2, (float)-3.5, -1);
     public List<GameObject> options;
     private List<GameObject> currentBlocks = new List<GameObject>();
 

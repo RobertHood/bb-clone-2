@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -11,6 +12,9 @@ public class GridManager : MonoBehaviour
     public TileBase highlightTile;
     public TileBase originalTile;
 
+    public int playerScore;
+
+    public TextMeshProUGUI score;
     [Header("Board Settings (8x8)")]
     public int minX = -2, maxX = 5;   // theo trục X
     public int minY = -6, maxY = 1;   // theo trục Y
@@ -33,7 +37,12 @@ public class GridManager : MonoBehaviour
         if (tilemap == null)
             tilemap = GetComponent<Tilemap>();
     }
+    public void addScore(int scoreToAdd)
+    {
 
+        playerScore += scoreToAdd;
+        score.text = playerScore.ToString();
+    }
     void Update()
     {
         if (objectBeingDragged == null) return;
@@ -103,10 +112,11 @@ public class GridManager : MonoBehaviour
             block.GetComponent<Collider2D>().enabled = false;
 
         block.transform.position += offset;
+        block.transform.position = new Vector3(block.transform.position.x, block.transform.position.y, 0);
         block.transform.SetParent(placedBlock);
         foreach (var cell in targetCells)
             SetGridPosValue(cell, 1);
-
+        addScore(block.transform.childCount);
         CheckAndClear();
     }
 
@@ -174,44 +184,46 @@ public class GridManager : MonoBehaviour
     {
         for (int y = minY; y <= maxY; y++)
         {
-        bool full = true;
+            bool full = true;
 
-        // check if row is full
-        for (int x = minX; x <= maxX; x++)
-        {
-            if (!gridMap.TryGetValue(new Vector3Int(x, y, 0), out int val) || val == 0)
+            // check if row is full
+            for (int x = minX; x <= maxX; x++)
             {
-                full = false;
-                break;
-            }
-        }
-
-        if (full)
-        {
-            Debug.Log("Cleared Row at Y=" + y);
-
-            foreach (BlockData block in FindObjectsByType<BlockData>(FindObjectsSortMode.None))
-            {
-                
-                var cellsCopy = new List<Transform>(block.cells);
-
-                foreach (Transform cell in cellsCopy)
+                if (!gridMap.TryGetValue(new Vector3Int(x, y, 0), out int val) || val == 0)
                 {
-                    Vector3Int cellGridPos = tilemap.WorldToCell(cell.position);
-                    if (cellGridPos.y == y)
+                    full = false;
+                    break;
+                }
+            }
+
+            if (full)
+            {
+                Debug.Log("Cleared Row at Y=" + y);
+
+                foreach (BlockData block in FindObjectsByType<BlockData>(FindObjectsSortMode.None))
+                {
+
+                    var cellsCopy = new List<Transform>(block.cells);
+
+                    foreach (Transform cell in cellsCopy)
                     {
-                        Destroy(cell.gameObject);
-                        gridMap[cellGridPos] = 0; 
-                        block.cells.Remove(cell);
+                        Vector3Int cellGridPos = tilemap.WorldToCell(cell.position);
+                        if (cellGridPos.y == y && block.transform.parent == placedBlock)
+                        {
+                            Destroy(cell.gameObject);
+                            gridMap[cellGridPos] = 0;
+                            block.cells.Remove(cell);
+                        }
+                    }
+                    if (block.cells.Count == 0)
+                    {
+                        Destroy(block.gameObject);
                     }
                 }
-                if (block.cells.Count == 0)
-                {
-                    Destroy(block.gameObject);
-                }
+                addScore(8);
             }
+            
         }
-    }
     }
 
     private void DeleteCol()
@@ -230,30 +242,31 @@ public class GridManager : MonoBehaviour
             }
         }
 
-        if (full)
-        {
-            Debug.Log("Cleared Col at X=" + x);
-
-            foreach (BlockData block in FindObjectsByType<BlockData>(FindObjectsSortMode.None))
+            if (full)
             {
-                var cellsCopy = new List<Transform>(block.cells);
+                Debug.Log("Cleared Col at X=" + x);
 
-                foreach (Transform cell in cellsCopy)
+                foreach (BlockData block in FindObjectsByType<BlockData>(FindObjectsSortMode.None))
                 {
-                    Vector3Int cellGridPos = tilemap.WorldToCell(cell.position);
-                    if (cellGridPos.x == x) 
+                    var cellsCopy = new List<Transform>(block.cells);
+
+                    foreach (Transform cell in cellsCopy)
                     {
-                        Destroy(cell.gameObject);
-                        gridMap[cellGridPos] = 0;
-                        block.cells.Remove(cell);
+                        Vector3Int cellGridPos = tilemap.WorldToCell(cell.position);
+                        if (cellGridPos.x == x && block.transform.parent == placedBlock)
+                        {
+                            Destroy(cell.gameObject);
+                            gridMap[cellGridPos] = 0;
+                            block.cells.Remove(cell);
+                        }
+                    }
+
+                    if (block.cells.Count == 0)
+                    {
+                        Destroy(block.gameObject);
                     }
                 }
-
-                if (block.cells.Count == 0)
-                {
-                    Destroy(block.gameObject);
-                }
-                }
+                addScore(8);
             }
         }
     }

@@ -59,7 +59,7 @@ public class BlockData : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, 
 
         Vector3 worldPoint = Camera.main.ScreenToWorldPoint(eventData.position);
         worldPoint.z = 0f;
-        transform.position = worldPoint;
+        transform.position = new Vector3(worldPoint.x, worldPoint.y, -1);
 
         // Preview sẽ tự động cập nhật trong GridManager.Update()
         Debug.Log("OnDrag");
