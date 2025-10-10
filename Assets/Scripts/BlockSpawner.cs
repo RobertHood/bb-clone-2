@@ -5,9 +5,10 @@ using UnityEditor.XR;
 using UnityEngine;
 using UnityEngine.Rendering;
 
+// Sinh (spawn) các block lựa chọn cho người chơi
 public class BlockSpawner : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    
     public List<GameObject> blockArrays = new List<GameObject>();
 
     private Vector3 firstSlot = new Vector3(-2, (float)-3.5, -1);
@@ -39,13 +40,17 @@ public class BlockSpawner : MonoBehaviour
         currentBlocks.Add(block1);
         currentBlocks.Add(block2);
         currentBlocks.Add(block3);
+
+        
     }
     void Start()
     {
+        // Spawn bộ block ban đầu
         SpawnBlock();
     }
 
-    // Update is called once per frame
+    // Kiểm tra trạng thái các block hiển thị; nếu tất cả đã lock (đặt) thì spawn lô mới
+    // ... (Giữ nguyên hàm Update và GetCurrentBlocks)
     void Update()
     {
         if (currentBlocks.Count == 0) return;
@@ -63,14 +68,16 @@ public class BlockSpawner : MonoBehaviour
             }
 
             BlockData data = block.GetComponent<BlockData>();
-            if (data != null && !data.isLocked)
+            if (data != null && data.isLocked)
             {
+                currentBlocks.RemoveAt(i);
+            }
+            else {
                 allLocked = false;
-                break;
             }
         }
 
-        if (allLocked && currentBlocks.Count > 0)
+        if (currentBlocks.Count == 0)
         {
             SpawnBlock();
         }
@@ -78,6 +85,15 @@ public class BlockSpawner : MonoBehaviour
 
     public List<GameObject> GetCurrentBlocks()
     {
-        return currentBlocks;
+        // Sửa lại một chút để nó chỉ trả về những block chưa bị khóa
+        List<GameObject> unplacedBlocks = new List<GameObject>();
+        foreach (var block in currentBlocks)
+        {
+            if (block != null && !block.GetComponent<BlockData>().isLocked)
+            {
+                unplacedBlocks.Add(block);
+            }
+        }
+        return unplacedBlocks;
     }
 }

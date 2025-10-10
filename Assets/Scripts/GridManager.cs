@@ -6,6 +6,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Tilemaps;
+using UnityEngine.SceneManagement;
 
 public class GridManager : MonoBehaviour
 {
@@ -17,11 +18,14 @@ public class GridManager : MonoBehaviour
     public int playerScore;
 
     public TextMeshProUGUI score;
+    [SerializeField] private GameObject gameOverUi;
+    private bool isGameOver = false;
+    
     [Header("Board Settings (8x8)")]
     public int minX = -2, maxX = 5;   // theo trục X
     public int minY = -6, maxY = 1;   // theo trục Y
 
-    // Lưu preview highlight
+    // Lưu các ô đang highlight làm preview
     private List<Vector3Int> previousPreview = new List<Vector3Int>();
 
     private Vector3Int gridMin = new Vector3Int(-2, -6, 0);
@@ -31,21 +35,38 @@ public class GridManager : MonoBehaviour
 
     private Dictionary<Vector3Int, int> gridMap = new Dictionary<Vector3Int, int>();
 
-    // Đối tượng đang drag
+    // Đối tượng đang được kéo
     private GameObject objectBeingDragged;
     public GameObject blockSpawner;
     private BlockSpawner bs;
+    private void Awake()
+    {
+        // Ensure panel hidden as early as possible if assigned
+        if (gameOverUi != null)
+            gameOverUi.SetActive(false);
+        else
+            Debug.LogWarning("GridManager.Awake: 'gameOverUi' is not assigned in the Inspector.");
+    }
     void Start()
     {
         if (tilemap == null)
             tilemap = GetComponent<Tilemap>();
-        if (bs == null)
+        if (bs == null && blockSpawner != null)
             bs = blockSpawner.GetComponent<BlockSpawner>();
+
+        if (gameOverUi != null)
+            gameOverUi.SetActive(false);
+        else
+            Debug.LogWarning("GridManager: 'gameOverUi' is not assigned in the Inspector. Game Over UI will not be shown.");
     }
     public void addScore(int scoreToAdd)
     {
 
         playerScore += scoreToAdd;
+        score.text = playerScore.ToString();
+    }
+
+    public void UpdateScore() {
         score.text = playerScore.ToString();
     }
     void Update()
@@ -154,14 +175,19 @@ public class GridManager : MonoBehaviour
         BlockData data = block.GetComponent<BlockData>();
         Vector3Int[] positions = new Vector3Int[data.cells.Count];
 
-        // Tính offset: từ cell đầu tiên của block đến vị trí chuột
+        // Use anchor cell's local position as reference and apply local offsets via TransformVector
         Vector3Int mouseCell = tilemap.WorldToCell(mouseWorld);
         Vector3 cellCenter = tilemap.GetCellCenterWorld(mouseCell);
-        Vector3 offset = cellCenter - data.cells[0].position;
+
+        // If cells are stored as child transforms, use localPosition to compute offsets
+        Vector3 anchorLocal = data.cells[0].localPosition;
 
         for (int i = 0; i < data.cells.Count; i++)
         {
-            Vector3 worldPos = data.cells[i].position + offset;
+            Vector3 localOffset = data.cells[i].localPosition - anchorLocal;
+            // Convert local offset into world-space vector considering parent's scale/rotation
+            Vector3 worldOffset = block.transform.TransformVector(localOffset);
+            Vector3 worldPos = cellCenter + worldOffset;
             positions[i] = tilemap.WorldToCell(worldPos);
         }
         return positions;
@@ -184,9 +210,11 @@ public class GridManager : MonoBehaviour
         DeleteCol();
         if (!CheckAllBlockPlaceable())
         {
-            Debug.Log("Game Over");
+            Debug.Log("Game Over: No place for new blocks.");
+            GameOver();
         }
     }
+
 
     private void DeleteRow()
     {
@@ -277,11 +305,11 @@ public class GridManager : MonoBehaviour
                 addScore(8);
             }
         }
-    }   
+    }
 
     private bool CheckAllBlockPlaceable()
     {
-        
+        // Lấy danh sách ô còn trống
         List<Vector3Int> availableCells = new List<Vector3Int>();
         for (int x = minX; x <= maxX; x++)
         {
@@ -292,11 +320,41 @@ public class GridManager : MonoBehaviour
                     availableCells.Add(pos);
             }
         }
+        // Lấy các block hiện đang spawn từ BlockSpawner
+        if (bs == null && blockSpawner != null) bs = blockSpawner.GetComponent<BlockSpawner>();
+        if (bs == null)
+        {
+            Debug.Log("OK");
+            return true; // không có block spawner → không báo game over ở đây
+        }
 
         List<GameObject> spawnedBlocks = bs.GetCurrentBlocks();
+        if (spawnedBlocks == null || spawnedBlocks.Count == 0)
+        {
+            Debug.Log("OK");
+            return true; // chưa có block -> không game over
+        }
+
+        Debug.Log($"CheckAllBlockPlaceable: availableCells={availableCells.Count}, spawnedBlocks={spawnedBlocks.Count}");
+
+        // Diagnostic holder for first failing reason
+        string diagBlock = null;
+        Vector3Int diagAnchor = new Vector3Int();
+        Vector3Int diagFailCell = new Vector3Int();
+        int diagFailVal = -1;
+        TileBase diagTile = null;
 
         foreach (GameObject block in spawnedBlocks)
         {
+            if (block == null) continue;
+
+            var bd = block.GetComponent<BlockData>();
+            if (bd != null && bd.isLocked)
+            {
+                continue;
+            }
+
+            // Thử đặt block tại mọi ô trống
             foreach (Vector3Int cell in availableCells)
             {
                 Vector3 cellWorld = tilemap.GetCellCenterWorld(cell);
@@ -308,14 +366,91 @@ public class GridManager : MonoBehaviour
                     if (!IsInsideGrid(c) || !IsCellFree(c))
                     {
                         canPlace = false;
-                        // break;
+                        // capture diagnostic info if not already captured
+                        if (diagBlock == null)
+                        {
+                            diagBlock = block.name;
+                            diagAnchor = cell;
+                            diagFailCell = c;
+                            diagFailVal = GetGridPosValue(c);
+                            if (tilemap != null)
+                                diagTile = tilemap.GetTile(c);
+                        }
+                        break;
                     }
-                    Debug.Log("can place at c = " + c);
                 }
+
                 if (canPlace)
+                {
+                    Debug.Log($"CheckAllBlockPlaceable: found place for block '{block.name}' at anchor {cell}");
                     return true;
+                }
             }
         }
-        return false;
+
+            string blockList = string.Join(", ", spawnedBlocks.ConvertAll(b => b!=null?b.name:"null"));
+            Debug.Log("No more place");
+            if (diagBlock != null)
+            {
+                Debug.Log($"CheckAllBlockPlaceable diagnostic: first failure block={diagBlock}, anchor={diagAnchor}, failCell={diagFailCell}, gridVal={diagFailVal}, tile={diagTile}");
+            }
+            return false;
+    }
+
+    public void GameOver()
+    {
+        isGameOver = true;
+        // Keep final score (don't reset here) or change as needed
+        Time.timeScale = 0;
+        if (gameOverUi != null)
+            gameOverUi.SetActive(true);
+        else
+            Debug.LogWarning("GridManager: GameOver called but 'gameOverUi' is not assigned.");
+    }
+    public void RestartGame(){
+        // Safe restart: restore timescale and reload the active scene so Tilemap and scene objects are reset
+        isGameOver = false;
+        playerScore = 0;
+        UpdateScore();
+        Time.timeScale = 1;
+        // Reload currently active scene (avoid hardcoded scene name)
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    // Optional: helper to reset tilemap and grid state without reloading the scene
+    // You can call this instead of reloading if you want a faster reset.
+    public void ResetBoard()
+    {
+        // Clear placed blocks
+        if (placedBlock != null)
+        {
+            for (int i = placedBlock.childCount - 1; i >= 0; i--)
+            {
+                Destroy(placedBlock.GetChild(i).gameObject);
+            }
+        }
+
+        // Clear gridMap
+        gridMap.Clear();
+
+        // Reset tilemap tiles to originalTile within the board bounds
+        if (tilemap != null && originalTile != null)
+        {
+            for (int x = minX; x <= maxX; x++)
+            {
+                for (int y = minY; y <= maxY; y++)
+                {
+                    tilemap.SetTile(new Vector3Int(x, y, 0), originalTile);
+                }
+            }
+        }
+
+        // Reset score and UI
+        playerScore = 0;
+        UpdateScore();
+
+        // Respawn initial blocks if BlockSpawner available
+        if (bs == null && blockSpawner != null) bs = blockSpawner.GetComponent<BlockSpawner>();
+        bs?.SpawnBlock();
     }
 }

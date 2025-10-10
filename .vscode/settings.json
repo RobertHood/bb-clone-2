@@ -66,5 +66,5 @@
     "explorer.fileNesting.patterns": {
         "*.sln": "*.csproj"
     },
-    "dotnet.defaultSolution": "bb-clone-2.sln"
+    "dotnet.defaultSolution": "bb clone 2.sln"
 }
