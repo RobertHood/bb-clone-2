@@ -5,6 +5,7 @@ using System.Collections.Generic;
 public class BlockData : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndDragHandler, IDragHandler
 {
     private CanvasGroup canvasGroup;
+    public GridManager gm ;
     private Collider2D col;
 
     [Header("Block Cells")]
@@ -18,7 +19,7 @@ public class BlockData : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, 
     {
         col = GetComponent<Collider2D>();
         canvasGroup = GetComponent<CanvasGroup>();
-
+        gm = FindObjectOfType<GridManager>();
         // Lưu các ô con của block
         foreach (Transform child in transform)
         {
@@ -32,7 +33,6 @@ public class BlockData : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, 
     public void OnPointerDown(PointerEventData eventData)
     {
         if (isLocked) return;
-        Debug.Log("OnPointerDown");
     }
 
     public void OnBeginDrag(PointerEventData eventData)
@@ -46,11 +46,11 @@ public class BlockData : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, 
 
         // Scale về 1 khi bắt đầu kéo
         transform.localScale = Vector3.one;
+        transform.position = new Vector3(transform.position.x, transform.position.y, -2);
 
         // Thông báo GridManager biết block này đang drag
         FindObjectOfType<GridManager>().StartDrag(this.gameObject);
 
-        Debug.Log("OnBeginDrag");
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -59,10 +59,9 @@ public class BlockData : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, 
 
         Vector3 worldPoint = Camera.main.ScreenToWorldPoint(eventData.position);
         worldPoint.z = 0f;
-        transform.position = new Vector3(worldPoint.x, worldPoint.y, -1);
+        transform.position = new Vector3(worldPoint.x, worldPoint.y, transform.position.z);
 
         // Preview sẽ tự động cập nhật trong GridManager.Update()
-        Debug.Log("OnDrag");
     }
 
     public void OnEndDrag(PointerEventData eventData)
@@ -74,13 +73,10 @@ public class BlockData : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, 
 
         Vector3 worldPos = Camera.main.ScreenToWorldPoint(eventData.position);
         worldPos.z = 0;
-
-        GridManager gm = FindObjectOfType<GridManager>();
         if (gm != null)
         {
             gm.EndDrag(this.gameObject);
         }
-
         // Nếu block chưa được lock (drop outside) → reset về vị trí gốc
         if (!isLocked)
         {
@@ -88,8 +84,6 @@ public class BlockData : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, 
             transform.localScale = Vector3.one * 0.6f;
             Debug.Log("Dropped outside grid → Reset");
         }
-
-        Debug.Log("OnEndDrag");
     }
 
     void Update()

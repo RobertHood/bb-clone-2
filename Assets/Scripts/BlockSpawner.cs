@@ -9,12 +9,12 @@ public class BlockSpawner : MonoBehaviour
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     public List<GameObject> blockArrays = new List<GameObject>();
-    
+
     private Vector3 firstSlot = new Vector3(-2, (float)-3.5, -1);
     private Vector3 secondSlot = new Vector3(0, (float)-3.5, -1);
     private Vector3 thirdSlot = new Vector3(2, (float)-3.5, -1);
     public List<GameObject> options;
-    private List<GameObject> currentBlocks = new List<GameObject>();
+    public List<GameObject> currentBlocks = new List<GameObject>();
 
     public void SpawnBlock()
     {
@@ -42,7 +42,7 @@ public class BlockSpawner : MonoBehaviour
     }
     void Start()
     {
-        SpawnBlock(); 
+        SpawnBlock();
     }
 
     // Update is called once per frame
@@ -55,7 +55,7 @@ public class BlockSpawner : MonoBehaviour
         for (int i = currentBlocks.Count - 1; i >= 0; i--)
         {
             GameObject block = currentBlocks[i];
-            
+
             if (block == null)
             {
                 currentBlocks.RemoveAt(i);
@@ -76,4 +76,8 @@ public class BlockSpawner : MonoBehaviour
         }
     }
 
+    public List<GameObject> GetCurrentBlocks()
+    {
+        return currentBlocks;
+    }
 }

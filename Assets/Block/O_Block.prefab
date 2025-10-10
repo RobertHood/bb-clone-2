@@ -607,6 +607,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 77b69cca4ff64334faf77b1fc65ac280, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gm: {fileID: 0}
   cells: []
   originPos: {x: 0, y: 0, z: 0}
   isLocked: 0

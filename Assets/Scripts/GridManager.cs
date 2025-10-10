@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using NUnit.Framework;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -31,11 +33,14 @@ public class GridManager : MonoBehaviour
 
     // Đối tượng đang drag
     private GameObject objectBeingDragged;
-
+    public GameObject blockSpawner;
+    private BlockSpawner bs;
     void Start()
     {
         if (tilemap == null)
             tilemap = GetComponent<Tilemap>();
+        if (bs == null)
+            bs = blockSpawner.GetComponent<BlockSpawner>();
     }
     public void addScore(int scoreToAdd)
     {
@@ -101,7 +106,6 @@ public class GridManager : MonoBehaviour
         ClearHighlight();
     }
 
-    // --- Xử lý Snap ---
     private void SnapToGrid(GameObject block, Vector3Int[] targetCells)
     {
         Vector3 firstCellCenter = tilemap.GetCellCenterWorld(targetCells[0]);
@@ -178,6 +182,10 @@ public class GridManager : MonoBehaviour
     {
         DeleteRow();
         DeleteCol();
+        if (!CheckAllBlockPlaceable())
+        {
+            Debug.Log("Game Over");
+        }
     }
 
     private void DeleteRow()
@@ -222,7 +230,7 @@ public class GridManager : MonoBehaviour
                 }
                 addScore(8);
             }
-            
+
         }
     }
 
@@ -230,17 +238,17 @@ public class GridManager : MonoBehaviour
     {
         for (int x = minX; x <= maxX; x++)
         {
-        bool full = true;
+            bool full = true;
 
-        // check if column is full
-        for (int y = minY; y <= maxY; y++)
-        {
-            if (!gridMap.TryGetValue(new Vector3Int(x, y, 0), out int val) || val == 0)
+            // check if column is full
+            for (int y = minY; y <= maxY; y++)
             {
-                full = false;
-                break;
+                if (!gridMap.TryGetValue(new Vector3Int(x, y, 0), out int val) || val == 0)
+                {
+                    full = false;
+                    break;
+                }
             }
-        }
 
             if (full)
             {
@@ -269,5 +277,45 @@ public class GridManager : MonoBehaviour
                 addScore(8);
             }
         }
+    }   
+
+    private bool CheckAllBlockPlaceable()
+    {
+        
+        List<Vector3Int> availableCells = new List<Vector3Int>();
+        for (int x = minX; x <= maxX; x++)
+        {
+            for (int y = minY; y <= maxY; y++)
+            {
+                Vector3Int pos = new Vector3Int(x, y, 0);
+                if (IsCellFree(pos))
+                    availableCells.Add(pos);
+            }
+        }
+
+        List<GameObject> spawnedBlocks = bs.GetCurrentBlocks();
+
+        foreach (GameObject block in spawnedBlocks)
+        {
+            foreach (Vector3Int cell in availableCells)
+            {
+                Vector3 cellWorld = tilemap.GetCellCenterWorld(cell);
+                Vector3Int[] targetCells = GetPreviewCells(block, cellWorld);
+
+                bool canPlace = true;
+                foreach (var c in targetCells)
+                {
+                    if (!IsInsideGrid(c) || !IsCellFree(c))
+                    {
+                        canPlace = false;
+                        // break;
+                    }
+                    Debug.Log("can place at c = " + c);
+                }
+                if (canPlace)
+                    return true;
+            }
+        }
+        return false;
     }
 }

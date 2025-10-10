@@ -526,8 +526,8 @@ MonoBehaviour:
   - {fileID: 3352878008056223078, guid: 2217eefa793a3e549b6904bac82d5fed, type: 3}
   - {fileID: 3352878008056223078, guid: 9efc80af094a3834cbabcbdb1b0a1369, type: 3}
   - {fileID: 3352878008056223078, guid: 6d594a4e381bdfd4ca2e39e53f45ba06, type: 3}
-  - {fileID: 9126523403818903158, guid: 46c0a00626c8e594c820f76bd4d0d414, type: 3}
   options: []
+  currentBlocks: []
 --- !u!4 &908978296
 Transform:
   m_ObjectHideFlags: 0
@@ -1490,12 +1490,14 @@ MonoBehaviour:
   tilemap: {fileID: 1533061894}
   highlightTile: {fileID: 11400000, guid: b52def615310a1d45927ee88c6aa732e, type: 2}
   originalTile: {fileID: 11400000, guid: 004e61d863fef9640a8b4b7ddd5e7c69, type: 2}
-  score: {fileID: 0}
+  playerScore: 0
+  score: {fileID: 1906288244}
   minX: -2
   maxX: 5
   minY: -6
   maxY: 1
   placedBlock: {fileID: 1327233221}
+  blockSpawner: {fileID: 908978294}
 --- !u!19719996 &1533061897
 TilemapCollider2D:
   m_ObjectHideFlags: 0
@@ -1568,8 +1570,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 790}
-  m_SizeDelta: {x: 200, y: 50}
+  m_AnchoredPosition: {x: 0, y: 743.8916}
+  m_SizeDelta: {x: 1080, y: 142.2169}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1906288244
 MonoBehaviour:
