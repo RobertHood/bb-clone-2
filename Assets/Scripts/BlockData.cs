@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using System.Collections.Generic;
 
+// Quản lý dữ liệu và tương tác của 1 block (kéo thả)
 public class BlockData : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, IEndDragHandler, IDragHandler
 {
     private CanvasGroup canvasGroup;
@@ -19,14 +20,13 @@ public class BlockData : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, 
     {
         col = GetComponent<Collider2D>();
         canvasGroup = GetComponent<CanvasGroup>();
-        gm = FindObjectOfType<GridManager>();
-        // Lưu các ô con của block
+    gm = GridManager.FindAnyObjectByType<GridManager>();
+        // Lưu danh sách ô con (cells) của block
         foreach (Transform child in transform)
         {
             cells.Add(child);
         }
-
-        // Scale mặc định khi spawn block
+        // Scale mặc định khi spawn
         transform.localScale = Vector3.one * 0.6f;
     }
 
@@ -44,12 +44,13 @@ public class BlockData : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, 
 
         if (col != null) col.enabled = false;
 
-        // Scale về 1 khi bắt đầu kéo
+    // Khi bắt đầu kéo: scale về 1 để dễ nhìn
         transform.localScale = Vector3.one;
         transform.position = new Vector3(transform.position.x, transform.position.y, -2);
 
-        // Thông báo GridManager biết block này đang drag
-        FindObjectOfType<GridManager>().StartDrag(this.gameObject);
+    // Thông báo GridManager block đang được kéo
+    if (gm == null) gm = GridManager.FindAnyObjectByType<GridManager>();
+    gm?.StartDrag(this.gameObject);
 
     }
 
@@ -61,7 +62,7 @@ public class BlockData : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, 
         worldPoint.z = 0f;
         transform.position = new Vector3(worldPoint.x, worldPoint.y, transform.position.z);
 
-        // Preview sẽ tự động cập nhật trong GridManager.Update()
+        // Preview ô hợp lệ sẽ được GridManager cập nhật trong Update()
     }
 
     public void OnEndDrag(PointerEventData eventData)
