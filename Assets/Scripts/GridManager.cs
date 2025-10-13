@@ -444,7 +444,7 @@ public class GridManager : MonoBehaviour
         if (bs == null && blockSpawner != null) bs = blockSpawner.GetComponent<BlockSpawner>();
         bs?.SpawnBlock();
     }
-
+    // --- Lấy preview cell positions của block dựa theo vị trí từng cell---
     private Vector3Int[] GetPreviewCellsAtGrid(GameObject block, Vector3Int anchorCell)
     {
         BlockData data = block.GetComponent<BlockData>();
