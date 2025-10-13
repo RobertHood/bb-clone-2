@@ -354,19 +354,19 @@ public class GridManager : MonoBehaviour
                 continue;
             }
 
-            // Thử đặt block tại mọi ô trống
+            
             foreach (Vector3Int cell in availableCells)
             {
                 Vector3 cellWorld = tilemap.GetCellCenterWorld(cell);
-                Vector3Int[] targetCells = GetPreviewCells(block, cellWorld);
-
+                Vector3Int[] targetCells = GetPreviewCellsAtGrid(block, cell); // k dùng GetPreviewCell được vì GetPreviewCell hoạt động dựa trên vị trí của chuột chứ k phải do vị trí của cell
+                Debug.Log($"[{block.name}] found {targetCells.Length} preview cells:");
+                foreach (var c in targetCells) Debug.Log(c);
                 bool canPlace = true;
                 foreach (var c in targetCells)
                 {
                     if (!IsInsideGrid(c) || !IsCellFree(c))
                     {
                         canPlace = false;
-                        // capture diagnostic info if not already captured
                         if (diagBlock == null)
                         {
                             diagBlock = block.name;
@@ -400,7 +400,6 @@ public class GridManager : MonoBehaviour
     public void GameOver()
     {
         isGameOver = true;
-        // Keep final score (don't reset here) or change as needed
         Time.timeScale = 0;
         if (gameOverUi != null)
             gameOverUi.SetActive(true);
@@ -408,20 +407,17 @@ public class GridManager : MonoBehaviour
             Debug.LogWarning("GridManager: GameOver called but 'gameOverUi' is not assigned.");
     }
     public void RestartGame(){
-        // Safe restart: restore timescale and reload the active scene so Tilemap and scene objects are reset
         isGameOver = false;
         playerScore = 0;
         UpdateScore();
         Time.timeScale = 1;
-        // Reload currently active scene (avoid hardcoded scene name)
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 
-    // Optional: helper to reset tilemap and grid state without reloading the scene
-    // You can call this instead of reloading if you want a faster reset.
+
     public void ResetBoard()
     {
-        // Clear placed blocks
+
         if (placedBlock != null)
         {
             for (int i = placedBlock.childCount - 1; i >= 0; i--)
@@ -430,10 +426,8 @@ public class GridManager : MonoBehaviour
             }
         }
 
-        // Clear gridMap
         gridMap.Clear();
 
-        // Reset tilemap tiles to originalTile within the board bounds
         if (tilemap != null && originalTile != null)
         {
             for (int x = minX; x <= maxX; x++)
@@ -445,12 +439,48 @@ public class GridManager : MonoBehaviour
             }
         }
 
-        // Reset score and UI
         playerScore = 0;
         UpdateScore();
-
-        // Respawn initial blocks if BlockSpawner available
         if (bs == null && blockSpawner != null) bs = blockSpawner.GetComponent<BlockSpawner>();
         bs?.SpawnBlock();
     }
+
+    private Vector3Int[] GetPreviewCellsAtGrid(GameObject block, Vector3Int anchorCell)
+    {
+        BlockData data = block.GetComponent<BlockData>();
+        HashSet<Vector3Int> positions = new HashSet<Vector3Int>();
+
+        // Use local positions to avoid world rounding issues
+        Transform firstCell = data.cells[0];
+        Vector3 localAnchor = firstCell.localPosition;
+
+        foreach (Transform cell in data.cells)
+        {
+            // Calculate local offset in grid units
+            Vector3 localOffset = cell.localPosition - localAnchor;
+
+            // Convert offset (in Unity units) to grid offset
+            Vector3 gridOffset = new Vector3(
+                localOffset.x / tilemap.cellSize.x,
+                localOffset.y / tilemap.cellSize.y,
+                0
+            );
+
+            // Round to nearest integer cell offset
+            Vector3Int offset = new Vector3Int(
+                Mathf.RoundToInt(gridOffset.x),
+                Mathf.RoundToInt(gridOffset.y),
+                0
+            );
+
+            // Apply offset to anchor cell
+            Vector3Int target = anchorCell + offset;
+
+            positions.Add(target);
+        }
+
+        return new List<Vector3Int>(positions).ToArray();
+    }
+
+
 }

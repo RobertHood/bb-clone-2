@@ -20,13 +20,12 @@ public class BlockData : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, 
     {
         col = GetComponent<Collider2D>();
         canvasGroup = GetComponent<CanvasGroup>();
-    gm = GridManager.FindAnyObjectByType<GridManager>();
-        // Lưu danh sách ô con (cells) của block
-        foreach (Transform child in transform)
+        gm = GridManager.FindAnyObjectByType<GridManager>();
+        foreach (Transform child in GetComponentInChildren<Transform>(true)) // true = includeInactiveGameObject
         {
+
             cells.Add(child);
         }
-        // Scale mặc định khi spawn
         transform.localScale = Vector3.one * 0.6f;
     }
 
@@ -44,13 +43,10 @@ public class BlockData : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, 
 
         if (col != null) col.enabled = false;
 
-    // Khi bắt đầu kéo: scale về 1 để dễ nhìn
         transform.localScale = Vector3.one;
         transform.position = new Vector3(transform.position.x, transform.position.y, -2);
-
-    // Thông báo GridManager block đang được kéo
-    if (gm == null) gm = GridManager.FindAnyObjectByType<GridManager>();
-    gm?.StartDrag(this.gameObject);
+        if (gm == null) gm = GridManager.FindAnyObjectByType<GridManager>();
+        gm?.StartDrag(this.gameObject);
 
     }
 
