@@ -21,9 +21,10 @@ public class BlockData : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, 
         col = GetComponent<Collider2D>();
         canvasGroup = GetComponent<CanvasGroup>();
         gm = GridManager.FindAnyObjectByType<GridManager>();
-        foreach (Transform child in GetComponentInChildren<Transform>(true)) // true = includeInactiveGameObject
+        // Collect only direct child transforms as cells (exclude the root transform)
+        cells.Clear();
+        foreach (Transform child in transform)
         {
-
             cells.Add(child);
         }
         transform.localScale = Vector3.one * 0.6f;
