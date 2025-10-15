@@ -41,7 +41,7 @@ public class GridManager : MonoBehaviour
     private BlockSpawner bs;
     private void Awake()
     {
-        // Ensure panel hidden as early as possible if assigned
+
         if (gameOverUi != null)
             gameOverUi.SetActive(false);
         else
@@ -309,7 +309,6 @@ public class GridManager : MonoBehaviour
 
     private bool CheckAllBlockPlaceable()
     {
-        // Lấy danh sách ô còn trống
         List<Vector3Int> availableCells = new List<Vector3Int>();
         for (int x = minX; x <= maxX; x++)
         {
@@ -320,24 +319,22 @@ public class GridManager : MonoBehaviour
                     availableCells.Add(pos);
             }
         }
-        // Lấy các block hiện đang spawn từ BlockSpawner
+
         if (bs == null && blockSpawner != null) bs = blockSpawner.GetComponent<BlockSpawner>();
         if (bs == null)
         {
             Debug.Log("OK");
-            return true; // không có block spawner → không báo game over ở đây
+            return true;
         }
 
         List<GameObject> spawnedBlocks = bs.GetCurrentBlocks();
         if (spawnedBlocks == null || spawnedBlocks.Count == 0)
         {
             Debug.Log("OK");
-            return true; // chưa có block -> không game over
+            return true;
         }
 
         Debug.Log($"CheckAllBlockPlaceable: availableCells={availableCells.Count}, spawnedBlocks={spawnedBlocks.Count}");
-
-        // Diagnostic holder for first failing reason
         string diagBlock = null;
         Vector3Int diagAnchor = new Vector3Int();
         Vector3Int diagFailCell = new Vector3Int();
@@ -358,7 +355,7 @@ public class GridManager : MonoBehaviour
             foreach (Vector3Int cell in availableCells)
             {
                 Vector3 cellWorld = tilemap.GetCellCenterWorld(cell);
-                Vector3Int[] targetCells = GetPreviewCellsAtGrid(block, cell); // k dùng GetPreviewCell được vì GetPreviewCell hoạt động dựa trên vị trí của chuột chứ k phải do vị trí của cell
+                Vector3Int[] targetCells = GetPreviewCellsAtGrid(block, cell); 
                 Debug.Log($"[{block.name}] found {targetCells.Length} preview cells:");
                 foreach (var c in targetCells) Debug.Log(c);
                 bool canPlace = true;
@@ -444,36 +441,32 @@ public class GridManager : MonoBehaviour
         if (bs == null && blockSpawner != null) bs = blockSpawner.GetComponent<BlockSpawner>();
         bs?.SpawnBlock();
     }
-    // --- Lấy preview cell positions của block dựa theo vị trí từng cell---
+
     private Vector3Int[] GetPreviewCellsAtGrid(GameObject block, Vector3Int anchorCell)
     {
         BlockData data = block.GetComponent<BlockData>();
         HashSet<Vector3Int> positions = new HashSet<Vector3Int>();
 
-        // Use local positions to avoid world rounding issues
         Transform firstCell = data.cells[0];
         Vector3 localAnchor = firstCell.localPosition;
 
         foreach (Transform cell in data.cells)
         {
-            // Calculate local offset in grid units
             Vector3 localOffset = cell.localPosition - localAnchor;
 
-            // Convert offset (in Unity units) to grid offset
+
             Vector3 gridOffset = new Vector3(
                 localOffset.x / tilemap.cellSize.x,
                 localOffset.y / tilemap.cellSize.y,
                 0
             );
 
-            // Round to nearest integer cell offset
             Vector3Int offset = new Vector3Int(
                 Mathf.RoundToInt(gridOffset.x),
                 Mathf.RoundToInt(gridOffset.y),
                 0
             );
 
-            // Apply offset to anchor cell
             Vector3Int target = anchorCell + offset;
 
             positions.Add(target);
