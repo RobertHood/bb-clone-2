@@ -1,23 +1,14 @@
-using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
-public class Augment: MonoBehaviour
+public class Augment : MonoBehaviour
 {
-    public TextMeshProUGUI augmentName;
+    public AugmentEffect augmentEffect;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    public void OnClick(Tilemap tilemap)
     {
-        
-    }
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-    
-    public virtual void OnClick()
-    {
-        //augment effect
+        Destroy(gameObject);
+        augmentEffect.Apply(tilemap.gameObject);
     }
 }

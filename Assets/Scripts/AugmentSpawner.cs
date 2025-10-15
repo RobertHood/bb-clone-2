@@ -1,8 +1,12 @@
+using System.Collections.Generic;
 using UnityEngine;
 
-public class Augment1 : Augment
+public class AugmentSpawner : MonoBehaviour
 {
     // Start is called once before the first execution of Update after the MonoBehaviour is created
+    List<GameObject> augments = new List<GameObject>();
+
+    
     void Start()
     {
         
@@ -11,11 +15,6 @@ public class Augment1 : Augment
     // Update is called once per frame
     void Update()
     {
-
-    }
-
-    public override void OnClick()
-    {
-        base.OnClick();
+        
     }
 }

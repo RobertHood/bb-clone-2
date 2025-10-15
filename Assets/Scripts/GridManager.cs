@@ -15,15 +15,16 @@ public class GridManager : MonoBehaviour
     public TileBase highlightTile;
     public TileBase originalTile;
 
-    public int playerScore;
-
+    [Header("Scoring")]
+    [SerializeField] private int scoreMultiplier = 1;
+    [SerializeField] private int playerScore;
     public TextMeshProUGUI score;
+    [Header("Game Over")]
     [SerializeField] private GameObject gameOverUi;
     private bool isGameOver = false;
-    
-    [Header("Board Settings (8x8)")]
-    public int minX = -2, maxX = 5;   // theo trục X
-    public int minY = -6, maxY = 1;   // theo trục Y
+
+    private int minX = -2, maxX = 5;   // theo trục X
+    private int minY = -6, maxY = 1;   // theo trục Y
 
     // Lưu các ô đang highlight làm preview
     private List<Vector3Int> previousPreview = new List<Vector3Int>();
@@ -62,7 +63,7 @@ public class GridManager : MonoBehaviour
     public void addScore(int scoreToAdd)
     {
 
-        playerScore += scoreToAdd;
+        playerScore += scoreToAdd * scoreMultiplier;
         score.text = playerScore.ToString();
     }
 
@@ -475,5 +476,8 @@ public class GridManager : MonoBehaviour
         return new List<Vector3Int>(positions).ToArray();
     }
 
-
+    public void setScoreMultiplier(int newScoreMultiplier)
+    {
+        scoreMultiplier = newScoreMultiplier;
+    }
 }
