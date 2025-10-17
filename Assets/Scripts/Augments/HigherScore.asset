@@ -12,4 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c7e6f8406c0e7b441997393b0f9ea533, type: 3}
   m_Name: HigherScore
   m_EditorClassIdentifier: Assembly-CSharp::HigherScore
+  augmentEffectName: Higher Score
+  augmentEffectDescription: Your score mulitplier is now 2x
   scoreMultiplier: 2

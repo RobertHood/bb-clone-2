@@ -40,6 +40,7 @@ public class GridManager : MonoBehaviour
     private GameObject objectBeingDragged;
     public GameObject blockSpawner;
     private BlockSpawner bs;
+    // public GameObject augmentUI;
     private void Awake()
     {
 

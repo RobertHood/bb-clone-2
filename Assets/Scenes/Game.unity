@@ -899,12 +899,12 @@ GameObject:
   - component: {fileID: 839690012}
   - component: {fileID: 839690013}
   m_Layer: 0
-  m_Name: AugmentLogic
+  m_Name: AugmentSpawner
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &839690012
 Transform:
   m_ObjectHideFlags: 0
@@ -932,6 +932,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ebf21d1dc7ebcfc459586eff16486103, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+  augment: {fileID: 2749440192674837637, guid: 896d92debea5ce34791bea5d6dbe01ea, type: 3}
+  augmentSpawner: {fileID: 839690011}
+  augmentEffects:
+  - {fileID: 11400000, guid: 5d67cb562b171ba4aafaa951bc7f827e, type: 2}
 --- !u!1 &908978294
 GameObject:
   m_ObjectHideFlags: 0
@@ -978,6 +982,14 @@ MonoBehaviour:
   - {fileID: 9126523403818903158, guid: 46c0a00626c8e594c820f76bd4d0d414, type: 3}
   - {fileID: 5627850979313711735, guid: 7546503fefd18984cb62dbeb68ecfd0a, type: 3}
   - {fileID: 5627850979313711735, guid: 8f8b6f6c9e6630a4da0a38784fd64074, type: 3}
+  - {fileID: 3352878008056223078, guid: a90512043d229b6429a531ecb081cc32, type: 3}
+  - {fileID: 3352878008056223078, guid: 4c66d8acc81585e47846d48c98346163, type: 3}
+  - {fileID: 6004502039846691586, guid: 079aaba245c75e748b961697e20908eb, type: 3}
+  - {fileID: 6004502039846691586, guid: 25f42c867726b4a40ba9392f1335d374, type: 3}
+  - {fileID: 2328964027508109848, guid: ec1da2dc86130d3498f594d78dc00c0c, type: 3}
+  - {fileID: 2328964027508109848, guid: 6daec7cb3effe9842ab1b46b1ed493a4, type: 3}
+  - {fileID: 2328964027508109848, guid: 6daec7cb3effe9842ab1b46b1ed493a4, type: 3}
+  - {fileID: 6004502039846691586, guid: b419ccbf03b849c46b9ca1de001dc3f9, type: 3}
   options: []
   currentBlocks: []
 --- !u!4 &908978296
@@ -1349,130 +1361,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!1001 &1468239506
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 1878275914}
-    m_Modifications:
-    - target: {fileID: 1531923003461166529, guid: 896d92debea5ce34791bea5d6dbe01ea, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
-      value: 2
-      objectReference: {fileID: 0}
-    - target: {fileID: 1531923003461166529, guid: 896d92debea5ce34791bea5d6dbe01ea, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
-      value: 
-      objectReference: {fileID: 1932436993}
-    - target: {fileID: 1531923003461166529, guid: 896d92debea5ce34791bea5d6dbe01ea, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: OnClick
-      objectReference: {fileID: 0}
-    - target: {fileID: 1531923003461166529, guid: 896d92debea5ce34791bea5d6dbe01ea, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
-      value: Augment, Assembly-CSharp
-      objectReference: {fileID: 0}
-    - target: {fileID: 1531923003461166529, guid: 896d92debea5ce34791bea5d6dbe01ea, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgument
-      value: 
-      objectReference: {fileID: 1533061894}
-    - target: {fileID: 1531923003461166529, guid: 896d92debea5ce34791bea5d6dbe01ea, type: 3}
-      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
-      value: UnityEngine.Tilemaps.Tilemap, UnityEngine
-      objectReference: {fileID: 0}
-    - target: {fileID: 2215718057267693014, guid: 896d92debea5ce34791bea5d6dbe01ea, type: 3}
-      propertyPath: m_Pivot.x
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 2215718057267693014, guid: 896d92debea5ce34791bea5d6dbe01ea, type: 3}
-      propertyPath: m_Pivot.y
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 2215718057267693014, guid: 896d92debea5ce34791bea5d6dbe01ea, type: 3}
-      propertyPath: m_AnchorMax.x
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 2215718057267693014, guid: 896d92debea5ce34791bea5d6dbe01ea, type: 3}
-      propertyPath: m_AnchorMax.y
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 2215718057267693014, guid: 896d92debea5ce34791bea5d6dbe01ea, type: 3}
-      propertyPath: m_AnchorMin.x
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 2215718057267693014, guid: 896d92debea5ce34791bea5d6dbe01ea, type: 3}
-      propertyPath: m_AnchorMin.y
-      value: 0.5
-      objectReference: {fileID: 0}
-    - target: {fileID: 2215718057267693014, guid: 896d92debea5ce34791bea5d6dbe01ea, type: 3}
-      propertyPath: m_SizeDelta.x
-      value: 726.1031
-      objectReference: {fileID: 0}
-    - target: {fileID: 2215718057267693014, guid: 896d92debea5ce34791bea5d6dbe01ea, type: 3}
-      propertyPath: m_SizeDelta.y
-      value: 298.0531
-      objectReference: {fileID: 0}
-    - target: {fileID: 2215718057267693014, guid: 896d92debea5ce34791bea5d6dbe01ea, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2215718057267693014, guid: 896d92debea5ce34791bea5d6dbe01ea, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2215718057267693014, guid: 896d92debea5ce34791bea5d6dbe01ea, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2215718057267693014, guid: 896d92debea5ce34791bea5d6dbe01ea, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 2215718057267693014, guid: 896d92debea5ce34791bea5d6dbe01ea, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2215718057267693014, guid: 896d92debea5ce34791bea5d6dbe01ea, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2215718057267693014, guid: 896d92debea5ce34791bea5d6dbe01ea, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2215718057267693014, guid: 896d92debea5ce34791bea5d6dbe01ea, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2215718057267693014, guid: 896d92debea5ce34791bea5d6dbe01ea, type: 3}
-      propertyPath: m_AnchoredPosition.y
-      value: 329
-      objectReference: {fileID: 0}
-    - target: {fileID: 2215718057267693014, guid: 896d92debea5ce34791bea5d6dbe01ea, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2215718057267693014, guid: 896d92debea5ce34791bea5d6dbe01ea, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2215718057267693014, guid: 896d92debea5ce34791bea5d6dbe01ea, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2749440192674837637, guid: 896d92debea5ce34791bea5d6dbe01ea, type: 3}
-      propertyPath: m_Name
-      value: Augment
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 2749440192674837637, guid: 896d92debea5ce34791bea5d6dbe01ea, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1932436993}
-  m_SourcePrefab: {fileID: 100100000, guid: 896d92debea5ce34791bea5d6dbe01ea, type: 3}
 --- !u!1 &1533061891
 GameObject:
   m_ObjectHideFlags: 0
@@ -1486,7 +1374,6 @@ GameObject:
   - component: {fileID: 1533061893}
   - component: {fileID: 1533061895}
   - component: {fileID: 1533061897}
-  - component: {fileID: 1533061898}
   m_Layer: 3
   m_Name: Tilemap
   m_TagString: Untagged
@@ -2329,18 +2216,6 @@ TilemapCollider2D:
   m_MaximumTileChangeCount: 1000
   m_ExtrusionFactor: 0
   m_UseDelaunayMesh: 0
---- !u!114 &1533061898
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1533061891}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 91ef8678809119f40864cefad8a7b97d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Scoring
 --- !u!1 &1878275913
 GameObject:
   m_ObjectHideFlags: 0
@@ -2358,7 +2233,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1878275914
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2371,7 +2246,6 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1932436989}
   - {fileID: 1164816975}
   - {fileID: 839690012}
   m_Father: {fileID: 1100953141}
@@ -2568,29 +2442,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91ef8678809119f40864cefad8a7b97d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Scoring
---- !u!1 &1932436988 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 2749440192674837637, guid: 896d92debea5ce34791bea5d6dbe01ea, type: 3}
-  m_PrefabInstance: {fileID: 1468239506}
-  m_PrefabAsset: {fileID: 0}
---- !u!224 &1932436989 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 2215718057267693014, guid: 896d92debea5ce34791bea5d6dbe01ea, type: 3}
-  m_PrefabInstance: {fileID: 1468239506}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1932436993
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1932436988}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 079d6603b8e8a6e489086d2801dc1af4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Augment
-  augmentEffect: {fileID: 11400000, guid: 5d67cb562b171ba4aafaa951bc7f827e, type: 2}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
