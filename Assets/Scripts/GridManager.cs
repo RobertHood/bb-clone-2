@@ -23,8 +23,8 @@ public class GridManager : MonoBehaviour
     [SerializeField] private GameObject gameOverUi;
     private bool isGameOver = false;
 
-    private int minX = -2, maxX = 5;   // theo trục X
-    private int minY = -6, maxY = 1;   // theo trục Y
+    public int minX = -2, maxX = 5;   // theo trục X
+    public int minY = -6, maxY = 1;   // theo trục Y
 
     // Lưu các ô đang highlight làm preview
     private List<Vector3Int> previousPreview = new List<Vector3Int>();
