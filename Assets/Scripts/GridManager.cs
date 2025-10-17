@@ -82,13 +82,28 @@ public class GridManager : MonoBehaviour
         ClearHighlight();
 
         // Set highlight mới (nếu hợp lệ trong board)
-        List<Vector3Int> validCells = new List<Vector3Int>();
-        foreach (var pos in previewCells)
+        // List<Vector3Int> validCells = new List<Vector3Int>();
+        // foreach (var pos in previewCells)
+        // {
+        //     if (IsInsideGrid(pos))
+        //         validCells.Add(pos);
+        // }
+        // SetHighlight(validCells);
+        List<Vector3Int> validCells = new List<Vector3Int>(previewCells);
+        bool canPlace = true;
+        foreach (var cell in previewCells)
         {
-            if (IsInsideGrid(pos))
-                validCells.Add(pos);
+            if (!IsInsideGrid(cell) || !IsCellFree(cell))
+            {
+                canPlace = false;
+                break;
+            }
         }
-        SetHighlight(validCells);
+
+        if (canPlace)
+        {
+            SetHighlight(validCells);
+        }
     }
 
     // --- Khi bắt đầu drag block ---
@@ -141,6 +156,7 @@ public class GridManager : MonoBehaviour
             SetGridPosValue(cell, 1);
         addScore(block.transform.childCount);
         CheckAndClear();
+        AudioManager.Instance?.PlayPlaceBlock();
     }
 
     // --- Clear highlight ---
@@ -168,7 +184,7 @@ public class GridManager : MonoBehaviour
     }
 
     // --- Lấy preview cell positions của block dựa theo chuột ---
-    private Vector3Int[] GetPreviewCells(GameObject block, Vector3 mouseWorld)
+    public Vector3Int[] GetPreviewCells(GameObject block, Vector3 mouseWorld)
     {
         BlockData data = block.GetComponent<BlockData>();
         Vector3Int[] positions = new Vector3Int[data.cells.Count];
@@ -194,10 +210,10 @@ public class GridManager : MonoBehaviour
 
     // --- Helpers ---
     private void SetGridPosValue(Vector3Int gridPos, int v) => gridMap[gridPos] = v; // dánh dấu cell có block `1 hoặc 0
-    private bool IsCellFree(Vector3Int gridPos) => GetGridPosValue(gridPos) == 0; // kiểm tra ô còn trống không
-    private int GetGridPosValue(Vector3Int gridPos) => gridMap.TryGetValue(gridPos, out int value) ? value : 0;
+    public bool IsCellFree(Vector3Int gridPos) => GetGridPosValue(gridPos) == 0; // kiểm tra ô còn trống không
+    public int GetGridPosValue(Vector3Int gridPos) => gridMap.TryGetValue(gridPos, out int value) ? value : 0;
 
-    private bool IsInsideGrid(Vector3Int pos) // kiểm tra có nằm trong khung 8x8 không
+    public bool IsInsideGrid(Vector3Int pos) // kiểm tra có nằm trong khung 8x8 không
     {
         return pos.x >= minX && pos.x <= maxX && pos.y >= minY && pos.y <= maxY;
     }
@@ -394,8 +410,13 @@ public class GridManager : MonoBehaviour
     {
         isGameOver = true;
         Time.timeScale = 0;
-        if (gameOverUi != null)
-            gameOverUi.SetActive(true);
+
+        AudioManager.Instance?.PlayGameOver();
+        if (gameOverUi != null) {
+            gameOverUi.SetActive(true); 
+        }
+        else
+            Debug.LogWarning("GridManager: GameOver called but 'gameOverUi' is not assigned.");
     }
     public void RestartGame(){
         isGameOver = false;
@@ -435,16 +456,36 @@ public class GridManager : MonoBehaviour
         if (bs == null && blockSpawner != null) bs = blockSpawner.GetComponent<BlockSpawner>();
         bs?.SpawnBlock();
     }
-
-    private Vector3Int[] GetPreviewCellsAtGrid(GameObject block, Vector3Int anchorCell)
+    // --- Lấy preview cell positions của block dựa theo vị trí từng cell---
+    public Vector3Int[] GetPreviewCellsAtGrid(GameObject block, Vector3Int anchorCell)
     {
         BlockData data = block.GetComponent<BlockData>();
         HashSet<Vector3Int> positions = new HashSet<Vector3Int>();
 
-        Transform firstCell = data.cells[0];
+        // Determine source cells: prefer BlockData.cells if populated; otherwise fall back to direct children
+        List<Transform> sourceCells = null;
+        if (data != null && data.cells != null && data.cells.Count > 0)
+        {
+            sourceCells = data.cells;
+        }
+        else
+        {
+            sourceCells = new List<Transform>();
+            foreach (Transform child in block.transform)
+                sourceCells.Add(child);
+        }
+
+        if (sourceCells.Count == 0)
+        {
+            Debug.LogWarning($"GetPreviewCellsAtGrid: no cells found on '{block.name}'. Returning empty.");
+            return System.Array.Empty<Vector3Int>();
+        }
+
+        // Use local positions to avoid world rounding issues
+        Transform firstCell = sourceCells[0];
         Vector3 localAnchor = firstCell.localPosition;
 
-        foreach (Transform cell in data.cells)
+        foreach (Transform cell in sourceCells)
         {
             Vector3 localOffset = cell.localPosition - localAnchor;
 
