@@ -15,15 +15,16 @@ public class GridManager : MonoBehaviour
     public TileBase highlightTile;
     public TileBase originalTile;
 
-    public int playerScore;
-
+    [Header("Scoring")]
+    [SerializeField] private int scoreMultiplier = 1;
+    [SerializeField] private int playerScore;
     public TextMeshProUGUI score;
+    [Header("Game Over")]
     [SerializeField] private GameObject gameOverUi;
     private bool isGameOver = false;
-    
-    [Header("Board Settings (8x8)")]
-    public int minX = -2, maxX = 5;   // theo trục X
-    public int minY = -6, maxY = 1;   // theo trục Y
+
+    private int minX = -2, maxX = 5;   // theo trục X
+    private int minY = -6, maxY = 1;   // theo trục Y
 
     // Lưu các ô đang highlight làm preview
     private List<Vector3Int> previousPreview = new List<Vector3Int>();
@@ -39,13 +40,12 @@ public class GridManager : MonoBehaviour
     private GameObject objectBeingDragged;
     public GameObject blockSpawner;
     private BlockSpawner bs;
+    // public GameObject augmentUI;
     private void Awake()
     {
-        // Ensure panel hidden as early as possible if assigned
+
         if (gameOverUi != null)
             gameOverUi.SetActive(false);
-        else
-            Debug.LogWarning("GridManager.Awake: 'gameOverUi' is not assigned in the Inspector.");
     }
     void Start()
     {
@@ -56,13 +56,11 @@ public class GridManager : MonoBehaviour
 
         if (gameOverUi != null)
             gameOverUi.SetActive(false);
-        else
-            Debug.LogWarning("GridManager: 'gameOverUi' is not assigned in the Inspector. Game Over UI will not be shown.");
     }
     public void addScore(int scoreToAdd)
     {
 
-        playerScore += scoreToAdd;
+        playerScore += scoreToAdd * scoreMultiplier;
         score.text = playerScore.ToString();
     }
 
@@ -234,6 +232,7 @@ public class GridManager : MonoBehaviour
 
     private void DeleteRow()
     {
+        
         for (int y = minY; y <= maxY; y++)
         {
             bool full = true;
@@ -272,6 +271,8 @@ public class GridManager : MonoBehaviour
                         Destroy(block.gameObject);
                     }
                 }
+                var lc = GetComponent<LuckyClearController>();
+                lc?.NotifyClear();
                 addScore(8);
             }
 
@@ -318,6 +319,8 @@ public class GridManager : MonoBehaviour
                         Destroy(block.gameObject);
                     }
                 }
+                var lc = GetComponent<LuckyClearController>();
+                lc?.NotifyClear();
                 addScore(8);
             }
         }
@@ -325,7 +328,6 @@ public class GridManager : MonoBehaviour
 
     private bool CheckAllBlockPlaceable()
     {
-        // Lấy danh sách ô còn trống
         List<Vector3Int> availableCells = new List<Vector3Int>();
         for (int x = minX; x <= maxX; x++)
         {
@@ -336,24 +338,18 @@ public class GridManager : MonoBehaviour
                     availableCells.Add(pos);
             }
         }
-        // Lấy các block hiện đang spawn từ BlockSpawner
+
         if (bs == null && blockSpawner != null) bs = blockSpawner.GetComponent<BlockSpawner>();
         if (bs == null)
         {
-            Debug.Log("OK");
-            return true; // không có block spawner → không báo game over ở đây
+            return true;
         }
 
         List<GameObject> spawnedBlocks = bs.GetCurrentBlocks();
         if (spawnedBlocks == null || spawnedBlocks.Count == 0)
         {
-            Debug.Log("OK");
-            return true; // chưa có block -> không game over
+            return true;
         }
-
-        Debug.Log($"CheckAllBlockPlaceable: availableCells={availableCells.Count}, spawnedBlocks={spawnedBlocks.Count}");
-
-        // Diagnostic holder for first failing reason
         string diagBlock = null;
         Vector3Int diagAnchor = new Vector3Int();
         Vector3Int diagFailCell = new Vector3Int();
@@ -374,9 +370,7 @@ public class GridManager : MonoBehaviour
             foreach (Vector3Int cell in availableCells)
             {
                 Vector3 cellWorld = tilemap.GetCellCenterWorld(cell);
-                Vector3Int[] targetCells = GetPreviewCellsAtGrid(block, cell); // k dùng GetPreviewCell được vì GetPreviewCell hoạt động dựa trên vị trí của chuột chứ k phải do vị trí của cell
-                Debug.Log($"[{block.name}] found {targetCells.Length} preview cells:");
-                foreach (var c in targetCells) Debug.Log(c);
+                Vector3Int[] targetCells = GetPreviewCellsAtGrid(block, cell); 
                 bool canPlace = true;
                 foreach (var c in targetCells)
                 {
@@ -398,14 +392,13 @@ public class GridManager : MonoBehaviour
 
                 if (canPlace)
                 {
-                    Debug.Log($"CheckAllBlockPlaceable: found place for block '{block.name}' at anchor {cell}");
+
                     return true;
                 }
             }
         }
 
             string blockList = string.Join(", ", spawnedBlocks.ConvertAll(b => b!=null?b.name:"null"));
-            Debug.Log("No more place");
             if (diagBlock != null)
             {
                 Debug.Log($"CheckAllBlockPlaceable diagnostic: first failure block={diagBlock}, anchor={diagAnchor}, failCell={diagFailCell}, gridVal={diagFailVal}, tile={diagTile}");
@@ -494,24 +487,21 @@ public class GridManager : MonoBehaviour
 
         foreach (Transform cell in sourceCells)
         {
-            // Calculate local offset in grid units
             Vector3 localOffset = cell.localPosition - localAnchor;
 
-            // Convert offset (in Unity units) to grid offset
+
             Vector3 gridOffset = new Vector3(
                 localOffset.x / tilemap.cellSize.x,
                 localOffset.y / tilemap.cellSize.y,
                 0
             );
 
-            // Round to nearest integer cell offset
             Vector3Int offset = new Vector3Int(
                 Mathf.RoundToInt(gridOffset.x),
                 Mathf.RoundToInt(gridOffset.y),
                 0
             );
 
-            // Apply offset to anchor cell
             Vector3Int target = anchorCell + offset;
 
             positions.Add(target);
@@ -520,5 +510,33 @@ public class GridManager : MonoBehaviour
         return new List<Vector3Int>(positions).ToArray();
     }
 
+    public void setScoreMultiplier(int newScoreMultiplier)
+    {
+        scoreMultiplier += newScoreMultiplier;
+    }
 
+    public void ClearBoard()
+    {
+        if (placedBlock != null)
+        {
+            for (int i = placedBlock.childCount - 1; i >= 0; i--)
+            {
+                Destroy(placedBlock.GetChild(i).gameObject);
+                addScore(1);
+            }
+        }
+
+        gridMap.Clear();
+
+        if (tilemap != null && originalTile != null)
+        {
+            for (int x = minX; x <= maxX; x++)
+            {
+                for (int y = minY; y <= maxY; y++)
+                {
+                    tilemap.SetTile(new Vector3Int(x, y, 0), originalTile);
+                }
+            }
+        }
+    }
 }

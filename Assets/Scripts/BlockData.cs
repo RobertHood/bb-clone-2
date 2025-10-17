@@ -80,7 +80,6 @@ public class BlockData : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, 
         {
             transform.position = originPos;
             transform.localScale = Vector3.one * 0.6f;
-            Debug.Log("Dropped outside grid → Reset");
         }
     }
 
