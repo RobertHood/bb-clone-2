@@ -933,9 +933,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: '::'
   augment: {fileID: 2749440192674837637, guid: 896d92debea5ce34791bea5d6dbe01ea, type: 3}
-  augmentSpawner: {fileID: 839690011}
+  augmentUIPanel: {fileID: 1878275913}
+  effectTarget: {fileID: 1533061891}
   augmentEffects:
   - {fileID: 11400000, guid: 5d67cb562b171ba4aafaa951bc7f827e, type: 2}
+  - {fileID: 11400000, guid: f122f3225f7617f43bea46cc7829bffc, type: 2}
+  - {fileID: 11400000, guid: d6b3acf5ab0abc146a2a03e6b3b39497, type: 2}
 --- !u!1 &908978294
 GameObject:
   m_ObjectHideFlags: 0

@@ -48,7 +48,7 @@ public class Augment : MonoBehaviour
         if (augmentEffect == null) return;
         if (nameText != null) nameText.text = augmentEffect.augmentEffectName;
         if (descText != null) descText.text = augmentEffect.augmentEffectDescription;
-        if (scoreMulText != null) scoreMulText.text = "Score Multiplier: " + augmentEffect.scoreMultiplier + "x";
+        if (scoreMulText != null) scoreMulText.text = "Score Multiplier: +" + augmentEffect.scoreMultiplier + "x";
     }
     public void OnClick()
     {

@@ -36,8 +36,8 @@ public class AugmentSpawner : MonoBehaviour
         aug3.GetComponent<RectTransform>().localPosition = thirdSlot;
 
         var aug1Comp = aug1.GetComponent<Augment>();
-        var aug2Comp = aug1.GetComponent<Augment>();
-        var aug3Comp = aug1.GetComponent<Augment>();
+        var aug2Comp = aug2.GetComponent<Augment>();
+        var aug3Comp = aug3.GetComponent<Augment>();
 
         if (options.Count > 0 && aug1Comp != null) aug1Comp.Setup(options[0], augmentUIPanel, effectTarget);
         if (options.Count > 1 && aug2Comp != null) aug2Comp.Setup(options[1], augmentUIPanel, effectTarget);

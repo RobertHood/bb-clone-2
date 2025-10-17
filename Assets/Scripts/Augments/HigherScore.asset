@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: HigherScore
   m_EditorClassIdentifier: Assembly-CSharp::HigherScore
   augmentEffectName: Higher Score
-  augmentEffectDescription: Your score mulitplier is now 2x
+  augmentEffectDescription: Gain a higher score multiplier
   scoreMultiplier: 2

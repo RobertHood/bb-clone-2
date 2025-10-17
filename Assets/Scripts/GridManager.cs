@@ -46,8 +46,6 @@ public class GridManager : MonoBehaviour
 
         if (gameOverUi != null)
             gameOverUi.SetActive(false);
-        else
-            Debug.LogWarning("GridManager.Awake: 'gameOverUi' is not assigned in the Inspector.");
     }
     void Start()
     {
@@ -58,8 +56,6 @@ public class GridManager : MonoBehaviour
 
         if (gameOverUi != null)
             gameOverUi.SetActive(false);
-        else
-            Debug.LogWarning("GridManager: 'gameOverUi' is not assigned in the Inspector. Game Over UI will not be shown.");
     }
     public void addScore(int scoreToAdd)
     {
@@ -220,6 +216,7 @@ public class GridManager : MonoBehaviour
 
     private void DeleteRow()
     {
+        
         for (int y = minY; y <= maxY; y++)
         {
             bool full = true;
@@ -258,6 +255,8 @@ public class GridManager : MonoBehaviour
                         Destroy(block.gameObject);
                     }
                 }
+                var lc = GetComponent<LuckyClearController>();
+                lc?.NotifyClear();
                 addScore(8);
             }
 
@@ -304,6 +303,8 @@ public class GridManager : MonoBehaviour
                         Destroy(block.gameObject);
                     }
                 }
+                var lc = GetComponent<LuckyClearController>();
+                lc?.NotifyClear();
                 addScore(8);
             }
         }
@@ -325,18 +326,14 @@ public class GridManager : MonoBehaviour
         if (bs == null && blockSpawner != null) bs = blockSpawner.GetComponent<BlockSpawner>();
         if (bs == null)
         {
-            Debug.Log("OK");
             return true;
         }
 
         List<GameObject> spawnedBlocks = bs.GetCurrentBlocks();
         if (spawnedBlocks == null || spawnedBlocks.Count == 0)
         {
-            Debug.Log("OK");
             return true;
         }
-
-        Debug.Log($"CheckAllBlockPlaceable: availableCells={availableCells.Count}, spawnedBlocks={spawnedBlocks.Count}");
         string diagBlock = null;
         Vector3Int diagAnchor = new Vector3Int();
         Vector3Int diagFailCell = new Vector3Int();
@@ -358,8 +355,6 @@ public class GridManager : MonoBehaviour
             {
                 Vector3 cellWorld = tilemap.GetCellCenterWorld(cell);
                 Vector3Int[] targetCells = GetPreviewCellsAtGrid(block, cell); 
-                Debug.Log($"[{block.name}] found {targetCells.Length} preview cells:");
-                foreach (var c in targetCells) Debug.Log(c);
                 bool canPlace = true;
                 foreach (var c in targetCells)
                 {
@@ -381,14 +376,13 @@ public class GridManager : MonoBehaviour
 
                 if (canPlace)
                 {
-                    Debug.Log($"CheckAllBlockPlaceable: found place for block '{block.name}' at anchor {cell}");
+
                     return true;
                 }
             }
         }
 
             string blockList = string.Join(", ", spawnedBlocks.ConvertAll(b => b!=null?b.name:"null"));
-            Debug.Log("No more place");
             if (diagBlock != null)
             {
                 Debug.Log($"CheckAllBlockPlaceable diagnostic: first failure block={diagBlock}, anchor={diagAnchor}, failCell={diagFailCell}, gridVal={diagFailVal}, tile={diagTile}");
@@ -402,8 +396,6 @@ public class GridManager : MonoBehaviour
         Time.timeScale = 0;
         if (gameOverUi != null)
             gameOverUi.SetActive(true);
-        else
-            Debug.LogWarning("GridManager: GameOver called but 'gameOverUi' is not assigned.");
     }
     public void RestartGame(){
         isGameOver = false;
@@ -479,6 +471,31 @@ public class GridManager : MonoBehaviour
 
     public void setScoreMultiplier(int newScoreMultiplier)
     {
-        scoreMultiplier = newScoreMultiplier;
+        scoreMultiplier += newScoreMultiplier;
+    }
+
+    public void ClearBoard()
+    {
+        if (placedBlock != null)
+        {
+            for (int i = placedBlock.childCount - 1; i >= 0; i--)
+            {
+                Destroy(placedBlock.GetChild(i).gameObject);
+                addScore(1);
+            }
+        }
+
+        gridMap.Clear();
+
+        if (tilemap != null && originalTile != null)
+        {
+            for (int x = minX; x <= maxX; x++)
+            {
+                for (int y = minY; y <= maxY; y++)
+                {
+                    tilemap.SetTile(new Vector3Int(x, y, 0), originalTile);
+                }
+            }
+        }
     }
 }
