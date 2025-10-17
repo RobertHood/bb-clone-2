@@ -158,6 +158,7 @@ public class GridManager : MonoBehaviour
             SetGridPosValue(cell, 1);
         addScore(block.transform.childCount);
         CheckAndClear();
+        AudioManager.Instance?.PlayPlaceBlock();
     }
 
     // --- Clear highlight ---
@@ -416,8 +417,11 @@ public class GridManager : MonoBehaviour
     {
         isGameOver = true;
         Time.timeScale = 0;
-        if (gameOverUi != null)
-            gameOverUi.SetActive(true);
+
+        AudioManager.Instance?.PlayGameOver();
+        if (gameOverUi != null) {
+            gameOverUi.SetActive(true); 
+        }
         else
             Debug.LogWarning("GridManager: GameOver called but 'gameOverUi' is not assigned.");
     }
