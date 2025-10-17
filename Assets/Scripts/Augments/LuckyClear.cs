@@ -10,5 +10,6 @@ public class LuckyClear : AugmentEffect
         if (ctrl == null) ctrl = target.AddComponent<LuckyClearController>();
         ctrl.chance = chance;
         ctrl.enabled = true;
+        target.GetComponent<GridManager>().setScoreMultiplier(scoreMultiplier);
     }
 }
