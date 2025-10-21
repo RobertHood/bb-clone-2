@@ -15,4 +15,4 @@ MonoBehaviour:
   augmentEffectName: Lucky Clear
   augmentEffectDescription: Each clear has a 5% chance to clear whole board
   scoreMultiplier: 1
-  chance: 0.05
+  chance: 212.2

@@ -2,7 +2,7 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Augments/LuckyClear")]
 public class LuckyClear : AugmentEffect
 {
-    public float chance = 0.05f;
+    [SerializeField] public float chance = 0.05f;
     public override void Apply(GameObject target)
     {
         if (target == null) return;
