@@ -22,9 +22,9 @@ public class GridManager : MonoBehaviour
     [Header("Game Over")]
     [SerializeField] private GameObject gameOverUi;
     private bool isGameOver = false;
-
-    public int minX = -2, maxX = 5;   // theo trục X
-    public int minY = -6, maxY = 1;   // theo trục Y
+    private Vector3 currentDragWorldPos;
+    public int minX = 0, maxX = 9;   // theo trục X
+    public int minY = 0, maxY = 9;   // theo trục Y
 
     // Lưu các ô đang highlight làm preview
     private List<Vector3Int> previousPreview = new List<Vector3Int>();
@@ -71,24 +71,16 @@ public class GridManager : MonoBehaviour
     {
         if (objectBeingDragged == null) return;
 
-        // Lấy vị trí chuột trong world & cell
-        Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Mouse.current.position.value);
-        mouseWorld.z = 0;
+        // Use the drag position passed from BlockData
+        Vector3 mouseWorld = currentDragWorldPos;
 
-        // Lấy preview cell positions cho toàn block
+        // Get preview cell positions for the block
         Vector3Int[] previewCells = GetPreviewCells(objectBeingDragged, mouseWorld);
 
-        // Clear highlight cũ
+        // Clear highlight old
         ClearHighlight();
 
-        // Set highlight mới (nếu hợp lệ trong board)
-        // List<Vector3Int> validCells = new List<Vector3Int>();
-        // foreach (var pos in previewCells)
-        // {
-        //     if (IsInsideGrid(pos))
-        //         validCells.Add(pos);
-        // }
-        // SetHighlight(validCells);
+        // Check if can place
         List<Vector3Int> validCells = new List<Vector3Int>(previewCells);
         bool canPlace = true;
         foreach (var cell in previewCells)
@@ -117,7 +109,7 @@ public class GridManager : MonoBehaviour
     {
         if (objectBeingDragged != block) return;
 
-        Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(Mouse.current.position.value);
+        Vector3 mouseWorld = currentDragWorldPos;
         mouseWorld.z = 0;
         Vector3Int[] targetCells = GetPreviewCells(block, mouseWorld);
 
@@ -139,7 +131,11 @@ public class GridManager : MonoBehaviour
         objectBeingDragged = null;
         ClearHighlight();
     }
-
+    public void UpdateDragPosition(Vector3 worldPos)
+    {
+        currentDragWorldPos = worldPos;
+    }
+    
     private void SnapToGrid(GameObject block, Vector3Int[] targetCells)
     {
         Vector3 firstCellCenter = tilemap.GetCellCenterWorld(targetCells[0]);

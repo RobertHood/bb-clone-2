@@ -60,6 +60,8 @@ public class BlockData : MonoBehaviour, IPointerDownHandler, IBeginDragHandler, 
         transform.position = new Vector3(worldPoint.x, worldPoint.y, transform.position.z);
 
         // Preview ô hợp lệ sẽ được GridManager cập nhật trong Update()
+        if (gm != null) gm.UpdateDragPosition(worldPoint);
+        
     }
 
     public void OnEndDrag(PointerEventData eventData)
