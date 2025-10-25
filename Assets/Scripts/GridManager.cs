@@ -216,8 +216,23 @@ public class GridManager : MonoBehaviour
 
     private void CheckAndClear()
     {
-        DeleteRow();
-        DeleteCol();
+        HashSet<Vector3Int> cellsToDelete = new HashSet<Vector3Int>();
+
+        // gom ô từ hàng đầy
+        CollectFullRows(cellsToDelete);
+
+        // gom ô từ cột đầy
+        CollectFullCols(cellsToDelete);
+
+        // xóa tất cả ô đã gom
+        if (cellsToDelete.Count > 0)
+        {
+            ClearCells(cellsToDelete);
+            var lc = GetComponent<LuckyClearController>();
+            lc?.NotifyClear();
+            addScore(8 * cellsToDelete.Count / 10); // ví dụ cộng điểm tỉ lệ
+        }
+
         if (!CheckAllBlockPlaceable())
         {
             Debug.Log("Game Over: No place for new blocks.");
@@ -226,14 +241,11 @@ public class GridManager : MonoBehaviour
     }
 
 
-    private void DeleteRow()
+    private void CollectFullRows(HashSet<Vector3Int> toDelete)
     {
-        
         for (int y = minY; y <= maxY; y++)
         {
             bool full = true;
-
-            // check if row is full
             for (int x = minX; x <= maxX; x++)
             {
                 if (!gridMap.TryGetValue(new Vector3Int(x, y, 0), out int val) || val == 0)
@@ -245,43 +257,19 @@ public class GridManager : MonoBehaviour
 
             if (full)
             {
-                Debug.Log("Cleared Row at Y=" + y);
-
-                foreach (BlockData block in FindObjectsByType<BlockData>(FindObjectsSortMode.None))
-                {
-
-                    var cellsCopy = new List<Transform>(block.cells);
-
-                    foreach (Transform cell in cellsCopy)
-                    {
-                        Vector3Int cellGridPos = tilemap.WorldToCell(cell.position);
-                        if (cellGridPos.y == y && block.transform.parent == placedBlock)
-                        {
-                            Destroy(cell.gameObject);
-                            gridMap[cellGridPos] = 0;
-                            block.cells.Remove(cell);
-                        }
-                    }
-                    if (block.cells.Count == 0)
-                    {
-                        Destroy(block.gameObject);
-                    }
-                }
-                var lc = GetComponent<LuckyClearController>();
-                lc?.NotifyClear();
-                addScore(8);
+                Debug.Log("Row full at y=" + y);
+                for (int x = minX; x <= maxX; x++)
+                    toDelete.Add(new Vector3Int(x, y, 0));
             }
-
         }
     }
 
-    private void DeleteCol()
+
+    private void CollectFullCols(HashSet<Vector3Int> toDelete)
     {
         for (int x = minX; x <= maxX; x++)
         {
             bool full = true;
-
-            // check if column is full
             for (int y = minY; y <= maxY; y++)
             {
                 if (!gridMap.TryGetValue(new Vector3Int(x, y, 0), out int val) || val == 0)
@@ -293,32 +281,32 @@ public class GridManager : MonoBehaviour
 
             if (full)
             {
-                Debug.Log("Cleared Col at X=" + x);
-
-                foreach (BlockData block in FindObjectsByType<BlockData>(FindObjectsSortMode.None))
-                {
-                    var cellsCopy = new List<Transform>(block.cells);
-
-                    foreach (Transform cell in cellsCopy)
-                    {
-                        Vector3Int cellGridPos = tilemap.WorldToCell(cell.position);
-                        if (cellGridPos.x == x && block.transform.parent == placedBlock)
-                        {
-                            Destroy(cell.gameObject);
-                            gridMap[cellGridPos] = 0;
-                            block.cells.Remove(cell);
-                        }
-                    }
-
-                    if (block.cells.Count == 0)
-                    {
-                        Destroy(block.gameObject);
-                    }
-                }
-                var lc = GetComponent<LuckyClearController>();
-                lc?.NotifyClear();
-                addScore(8);
+                Debug.Log("Col full at x=" + x);
+                for (int y = minY; y <= maxY; y++)
+                    toDelete.Add(new Vector3Int(x, y, 0));
             }
+        }
+    }
+
+
+    private void ClearCells(HashSet<Vector3Int> toDelete)
+    {
+        foreach (BlockData block in FindObjectsByType<BlockData>(FindObjectsSortMode.None))
+        {
+            var cellsCopy = new List<Transform>(block.cells);
+            foreach (Transform cell in cellsCopy)
+            {
+                Vector3Int cellPos = tilemap.WorldToCell(cell.position);
+                if (toDelete.Contains(cellPos) && block.transform.parent == placedBlock)
+                {
+                    Destroy(cell.gameObject);
+                    gridMap[cellPos] = 0;
+                    block.cells.Remove(cell);
+                }
+            }
+
+            if (block.cells.Count == 0)
+                Destroy(block.gameObject);
         }
     }
 
